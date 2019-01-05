@@ -49,7 +49,7 @@ class LocalFileProviderTest {
                 audioProvider
             }
         }
-        val testFilePath = "./test.wav"
+        val testFilePath = "./test2.flac"
         val fileByteArray = File(testFilePath).source().buffer().readByteArray()
         val provider = LocalFileProvider(audioManager, testFilePath)
         GlobalScope.async { provider.startStream() }
