@@ -1,38 +1,38 @@
 package com.myskng.megmusicbot.provider
 
-import kotlinx.coroutines.Deferred
+import com.myskng.megmusicbot.extension.useMultipleCloseable
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
+import kotlinx.coroutines.isActive
+import okio.buffer
+import okio.source
 import org.koin.standalone.KoinComponent
 import sx.blah.discord.handle.audio.IAudioManager
-import java.io.FileInputStream
-import java.lang.Exception
+import java.io.File
 
-class LocalFileProvider(private val audioManager: IAudioManager, private val filePath: String) : KoinComponent,
+class LocalFileProvider(audioManager: IAudioManager, private val filePath: String) : KoinComponent,
     AbstractFileProvider(audioManager) {
-    private lateinit var fileInputStream: FileInputStream
-
-    override fun closeOriginStream() {
-        super.closeOriginStream()
-        fileInputStream.close()
+    companion object {
+        const val fileReaderBufferSize = 1024 * 256
     }
 
-    override fun fetchOriginStream() = GlobalScope.async {
-        try{
-            fileInputStream = FileInputStream(filePath)
-            val bufferArray = ByteArray(HttpFileProvider.httpBufferSize)
-            var bufferReadSize = 0
-            while ({
-                    bufferReadSize = fileInputStream.read(bufferArray, 0, HttpFileProvider.httpBufferSize)
-                    bufferReadSize != 0
-                }.invoke()) {
-                originStreamQueue.add(bufferArray.copyOf(bufferReadSize))
+    override fun fetchOriginStream() = GlobalScope.async<Unit>(coroutineContext) {
+        try {
+            val fileSource = File(filePath).source()
+            val fileBuffer = fileSource.buffer()
+            useMultipleCloseable(fileSource, fileBuffer) {
+                inputDataToEncoder().start()
+                while (fileBuffer.exhausted().not() && isActive) {
+                    if (fileBuffer.request(fileReaderBufferSize.toLong())) {
+                        originStreamQueue.add(fileBuffer.readByteArray(fileReaderBufferSize.toLong()))
+                    } else {
+                        originStreamQueue.add(fileBuffer.readByteArray())
+                    }
+                }
+                originStreamQueue.add(byteArrayOf())
             }
-            originStreamQueue.add(byteArrayOf())
-            fileInputStream.close()
-        }catch(ex:Exception){
-            closeOriginStream()
-            isCanceled = true
+        } catch (ex: Exception) {
+            cleanup()
         }
     }
 }
