@@ -1,6 +1,5 @@
 package com.myskng.megmusicbot.provider
 
-import com.myskng.megmusicbot.extension.useMultipleCloseableSuspend
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.isActive
@@ -9,6 +8,7 @@ import okio.source
 import org.koin.standalone.KoinComponent
 import sx.blah.discord.handle.audio.IAudioManager
 import java.io.File
+import java.util.logging.Level
 
 class LocalFileProvider(audioManager: IAudioManager, private val filePath: String) : KoinComponent,
     AbstractFileProvider(audioManager) {
@@ -16,22 +16,24 @@ class LocalFileProvider(audioManager: IAudioManager, private val filePath: Strin
         const val fileReaderBufferSize = 1024 * 256
     }
 
-    override fun fetchOriginStream() = GlobalScope.async<Unit>(coroutineContext) {
+    override fun fetchOriginStream() = GlobalScope.async(coroutineContext) {
         try {
             val fileSource = File(filePath).source()
             val fileBuffer = fileSource.buffer()
-            useMultipleCloseableSuspend(fileSource, fileBuffer) {
-                inputDataToEncoder().start()
-                while (fileBuffer.exhausted().not() && isActive) {
-                    if (fileBuffer.request(fileReaderBufferSize.toLong())) {
-                        originStreamQueue.send(fileBuffer.readByteArray(fileReaderBufferSize.toLong()))
-                    } else {
-                        originStreamQueue.send(fileBuffer.readByteArray())
+            fileSource.use {
+                fileBuffer.use {
+                    while (fileBuffer.exhausted().not() && isActive) {
+                        if (fileBuffer.request(fileReaderBufferSize.toLong())) {
+                            originStreamQueue.send(fileBuffer.readByteArray(fileReaderBufferSize.toLong()))
+                        } else {
+                            originStreamQueue.send(fileBuffer.readByteArray())
+                        }
                     }
+                    originStreamQueue.send(byteArrayOf())
                 }
-                originStreamQueue.send(byteArrayOf())
             }
         } catch (ex: Exception) {
+            logger.log(Level.SEVERE, ex.toString())
             cleanup()
         }
     }

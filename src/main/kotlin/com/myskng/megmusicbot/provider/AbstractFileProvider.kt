@@ -3,14 +3,12 @@ package com.myskng.megmusicbot.provider
 import com.myskng.megmusicbot.encoder.IEncoderProcess
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.take
 import org.koin.standalone.KoinComponent
 import org.koin.standalone.inject
 import sx.blah.discord.handle.audio.IAudioManager
 import sx.blah.discord.util.audio.providers.AudioInputStreamProvider
-import java.lang.Exception
-import java.util.concurrent.BlockingQueue
-import java.util.concurrent.LinkedBlockingQueue
+import java.util.logging.Level
+import java.util.logging.Logger
 import javax.sound.sampled.AudioSystem
 
 abstract class AbstractFileProvider(private val iAudioManager: IAudioManager) : KoinComponent {
@@ -18,9 +16,9 @@ abstract class AbstractFileProvider(private val iAudioManager: IAudioManager) : 
     private var audioInputStreamProvider: AudioInputStreamProvider? = null
     private val job = Job()
 
-    protected val originStreamQueue = Channel<ByteArray>()
-    protected abstract fun fetchOriginStream(): Deferred<Unit>
-    protected val coroutineContext = Dispatchers.IO + job
+    protected val logger = Logger.getLogger(this::class.qualifiedName)
+    protected val originStreamQueue = Channel<ByteArray>(Int.MAX_VALUE)
+    protected val coroutineContext = Dispatchers.Default + job
 
     protected open fun cleanup() {
         if (encoderProcess.isProcessAlive) {
@@ -29,10 +27,11 @@ abstract class AbstractFileProvider(private val iAudioManager: IAudioManager) : 
         job.cancel()
     }
 
+    protected abstract fun fetchOriginStream(): Deferred<Unit>
+
     protected fun inputDataToEncoder() = GlobalScope.async(coroutineContext) {
         try {
             encoderProcess.startProcess()
-            getDataFromEncoder().start()
             val stream = encoderProcess.stdInputStream
             lateinit var byteArray: ByteArray
             while (suspend {
@@ -42,6 +41,7 @@ abstract class AbstractFileProvider(private val iAudioManager: IAudioManager) : 
                 stream.write(byteArray)
             }
         } catch (ex: Exception) {
+            logger.log(Level.SEVERE, ex.toString())
             cleanup()
         }
     }
@@ -52,6 +52,7 @@ abstract class AbstractFileProvider(private val iAudioManager: IAudioManager) : 
             audioInputStreamProvider = AudioInputStreamProvider(audioInputStream)
             iAudioManager.audioProvider = audioInputStreamProvider
         } catch (ex: Exception) {
+            logger.log(Level.SEVERE, ex.toString())
             cleanup()
         }
     }
@@ -59,6 +60,8 @@ abstract class AbstractFileProvider(private val iAudioManager: IAudioManager) : 
     suspend fun startStream() {
         withContext(Dispatchers.Default) {
             fetchOriginStream().start()
+            inputDataToEncoder().start()
+            getDataFromEncoder().start()
             // Wait until playing ends.
             while (true) {
                 delay(500)
