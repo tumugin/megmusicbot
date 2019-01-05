@@ -33,12 +33,15 @@ abstract class AbstractFileProvider(private val iAudioManager: IAudioManager) : 
         try {
             encoderProcess.startProcess()
             val stream = encoderProcess.stdInputStream
-            lateinit var byteArray: ByteArray
-            while (suspend {
-                    byteArray = originStreamQueue.receive()
-                    byteArray.isNotEmpty()
-                }.invoke()) {
-                stream.write(byteArray)
+            stream.use {
+                lateinit var byteArray: ByteArray
+                while (suspend {
+                        byteArray = originStreamQueue.receive()
+                        byteArray.isNotEmpty()
+                    }.invoke()) {
+                    stream.write(byteArray)
+                }
+                logger.log(Level.INFO, "Encoder input complete.")
             }
         } catch (ex: Exception) {
             logger.log(Level.SEVERE, ex.toString())
@@ -51,6 +54,7 @@ abstract class AbstractFileProvider(private val iAudioManager: IAudioManager) : 
             val audioInputStream = AudioSystem.getAudioInputStream(encoderProcess.stdOutputStream)
             audioInputStreamProvider = AudioInputStreamProvider(audioInputStream)
             iAudioManager.audioProvider = audioInputStreamProvider
+            logger.log(Level.INFO, "AudioSystem prepare OK.")
         } catch (ex: Exception) {
             logger.log(Level.SEVERE, ex.toString())
             cleanup()
