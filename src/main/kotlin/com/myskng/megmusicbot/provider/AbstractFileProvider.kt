@@ -18,7 +18,7 @@ abstract class AbstractFileProvider(private val iAudioManager: IAudioManager) : 
     private var audioInputStreamProvider: AudioInputStreamProvider? = null
     private val job = Job()
 
-    protected val originStreamQueue: BlockingQueue<ByteArray> = LinkedBlockingQueue()
+    protected val originStreamQueue = Channel<ByteArray>()
     protected abstract fun fetchOriginStream(): Deferred<Unit>
     protected val coroutineContext = Dispatchers.IO + job
 
@@ -35,8 +35,8 @@ abstract class AbstractFileProvider(private val iAudioManager: IAudioManager) : 
             getDataFromEncoder().start()
             val stream = encoderProcess.stdInputStream
             lateinit var byteArray: ByteArray
-            while ({
-                    byteArray = originStreamQueue.take()
+            while (suspend {
+                    byteArray = originStreamQueue.receive()
                     byteArray.isNotEmpty()
                 }.invoke()) {
                 stream.write(byteArray)

@@ -1,6 +1,6 @@
 package com.myskng.megmusicbot.provider
 
-import com.myskng.megmusicbot.extension.useMultipleCloseable
+import com.myskng.megmusicbot.extension.useMultipleCloseableSuspend
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.isActive
@@ -32,16 +32,16 @@ class HttpFileProvider(audioManager: IAudioManager, private val url: String) : K
                 val stream = httpResponse.body()!!.byteStream()
                 val streamSource = stream.source()
                 val streamBuffer = streamSource.buffer()
-                useMultipleCloseable(stream, streamSource, streamBuffer) {
+                useMultipleCloseableSuspend(stream, streamSource, streamBuffer) {
                     while (streamBuffer.exhausted().not() && isActive) {
                         if (streamBuffer.request(httpBufferSize.toLong())) {
-                            originStreamQueue.add(streamBuffer.readByteArray(httpBufferSize.toLong()))
+                            originStreamQueue.send(streamBuffer.readByteArray(httpBufferSize.toLong()))
                         } else {
-                            originStreamQueue.add(streamBuffer.readByteArray())
+                            originStreamQueue.send(streamBuffer.readByteArray())
                         }
                     }
+                    originStreamQueue.send(byteArrayOf())
                 }
-                originStreamQueue.add(byteArrayOf())
             }
         } catch (ex: Exception) {
             cleanup()
