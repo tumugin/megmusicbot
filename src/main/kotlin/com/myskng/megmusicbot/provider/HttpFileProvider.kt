@@ -10,6 +10,7 @@ import okio.source
 import org.koin.standalone.KoinComponent
 import org.koin.standalone.inject
 import sx.blah.discord.handle.audio.IAudioManager
+import java.util.logging.Level
 
 class HttpFileProvider(audioManager: IAudioManager, private val url: String) : KoinComponent,
     AbstractFileProvider(audioManager) {
@@ -21,11 +22,12 @@ class HttpFileProvider(audioManager: IAudioManager, private val url: String) : K
 
     override fun fetchOriginStream() = GlobalScope.async(coroutineContext) {
         try {
+            logger.log(Level.INFO, "[HTTPFile] Download start. address=$url")
             val request = Request.Builder().url(url).build()
             val httpResponse = okHttpClient.newCall(request).execute()
             httpResponse.use {
                 if (httpResponse.isSuccessful.not()) {
-                    throw Exception("HTTP(S) connection fault. Response code=${httpResponse.code()}")
+                    throw Exception("HTTP(S) connection fault with response code ${httpResponse.code()}.(URL=$url)")
                 }
                 val stream = httpResponse.body()!!.byteStream()
                 val streamSource = stream.source()
@@ -38,9 +40,12 @@ class HttpFileProvider(audioManager: IAudioManager, private val url: String) : K
                     }
                 }
                 originStreamQueue.send(byteArrayOf())
+                logger.log(Level.INFO, "[HTTPFile] Downloaded all bytes.")
             }
         } catch (ex: Exception) {
-            cleanup()
+            logger.log(Level.SEVERE, "[HTTPFile] $ex")
+            cleanupOnError()
+            reportError(ex)
         }
     }
 }

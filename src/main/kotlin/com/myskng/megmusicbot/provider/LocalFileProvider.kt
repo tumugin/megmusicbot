@@ -18,6 +18,7 @@ class LocalFileProvider(audioManager: IAudioManager, private val filePath: Strin
 
     override fun fetchOriginStream() = GlobalScope.async(coroutineContext) {
         try {
+            logger.log(Level.INFO, "[LocalFile] Load start. file=$filePath")
             val fileSource = File(filePath).source()
             val fileBuffer = fileSource.buffer()
             fileSource.use {
@@ -30,11 +31,13 @@ class LocalFileProvider(audioManager: IAudioManager, private val filePath: Strin
                         }
                     }
                     originStreamQueue.send(byteArrayOf())
+                    logger.log(Level.INFO, "[LocalFile] Loaded all bytes.")
                 }
             }
         } catch (ex: Exception) {
-            logger.log(Level.SEVERE, ex.toString())
-            cleanup()
+            logger.log(Level.SEVERE, "[LocalFile] $ex")
+            cleanupOnError()
+            reportError(ex)
         }
     }
 }

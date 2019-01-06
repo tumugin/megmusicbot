@@ -16,11 +16,22 @@ abstract class AbstractFileProvider(private val iAudioManager: IAudioManager) : 
     private var audioInputStreamProvider: AudioInputStreamProvider? = null
     private val job = Job()
 
-    protected val logger = Logger.getLogger(this::class.qualifiedName)
+    protected val logger by inject<Logger>()
     protected val originStreamQueue = Channel<ByteArray>(Int.MAX_VALUE)
     protected val coroutineContext = Dispatchers.Default + job
 
-    protected open fun cleanup() {
+    var onError: ((exception: Exception) -> Unit)? = null
+
+    protected fun reportError(exception: Exception) {
+        when (exception) {
+            is CancellationException -> {
+                // dismiss this error
+            }
+            else -> onError?.invoke(exception)
+        }
+    }
+
+    protected open fun cleanupOnError() {
         if (encoderProcess.isProcessAlive) {
             encoderProcess.killProcess()
         }
@@ -34,6 +45,7 @@ abstract class AbstractFileProvider(private val iAudioManager: IAudioManager) : 
             encoderProcess.startProcess()
             val stream = encoderProcess.stdInputStream
             stream.use {
+                logger.log(Level.INFO, "[Encoder] Encoder input start.")
                 lateinit var byteArray: ByteArray
                 while (suspend {
                         byteArray = originStreamQueue.receive()
@@ -41,28 +53,32 @@ abstract class AbstractFileProvider(private val iAudioManager: IAudioManager) : 
                     }.invoke()) {
                     stream.write(byteArray)
                 }
-                logger.log(Level.INFO, "Encoder input complete.")
+                logger.log(Level.INFO, "[Encoder] Encoder input complete.")
             }
         } catch (ex: Exception) {
-            logger.log(Level.SEVERE, ex.toString())
-            cleanup()
+            logger.log(Level.SEVERE, "[Encoder] $ex")
+            cleanupOnError()
+            reportError(ex)
         }
     }
 
     protected fun getDataFromEncoder() = GlobalScope.async(coroutineContext) {
         try {
+            logger.log(Level.INFO, "[Encoder] AudioSystem prepare start.")
             val audioInputStream = AudioSystem.getAudioInputStream(encoderProcess.stdOutputStream)
             audioInputStreamProvider = AudioInputStreamProvider(audioInputStream)
             iAudioManager.audioProvider = audioInputStreamProvider
-            logger.log(Level.INFO, "AudioSystem prepare OK.")
+            logger.log(Level.INFO, "[Encoder] AudioSystem prepare OK.")
         } catch (ex: Exception) {
-            logger.log(Level.SEVERE, ex.toString())
-            cleanup()
+            logger.log(Level.SEVERE, "[Encoder] $ex")
+            cleanupOnError()
+            reportError(ex)
         }
     }
 
     suspend fun startStream() {
         withContext(Dispatchers.Default) {
+            logger.log(Level.INFO, "[Provider] Provider starting...")
             fetchOriginStream().start()
             inputDataToEncoder().start()
             getDataFromEncoder().start()
@@ -73,6 +89,7 @@ abstract class AbstractFileProvider(private val iAudioManager: IAudioManager) : 
                     break
                 }
             }
+            logger.log(Level.INFO, "[Provider] Song play end. Provider disposing...")
         }
     }
 }
