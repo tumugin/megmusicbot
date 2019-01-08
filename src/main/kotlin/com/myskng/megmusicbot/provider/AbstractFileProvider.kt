@@ -92,4 +92,8 @@ abstract class AbstractFileProvider(private val iAudioManager: IAudioManager) : 
             logger.log(Level.INFO, "[Provider] Song play end. Provider disposing...")
         }
     }
+
+    fun stopStream() {
+        job.cancel()
+    }
 }
