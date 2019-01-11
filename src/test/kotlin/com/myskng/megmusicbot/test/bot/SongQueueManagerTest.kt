@@ -44,4 +44,31 @@ class SongQueueManagerTest : AbstractDefaultTester(), KoinComponent {
             playQueue.await()
         }
     }
+
+    @Test
+    fun canQueueSongWhenEmpty() = runBlocking {
+        // must be done within 1000msec.
+        val audioManager = get<AudioManager>()
+        val songQueue = SongQueueManager()
+        val testSong = MockSong()
+        // setting MockSong state to stop will ends play() immediately.
+        testSong.stop()
+        var firstTimeFlag = true
+        songQueue.onQueueEmpty = {
+            if (firstTimeFlag) {
+                firstTimeFlag = false
+                testSong
+            } else {
+                null
+            }
+        }
+        songQueue.onSongPlay = {
+            Assertions.assertSame(testSong, it)
+            songQueue.stop()
+        }
+
+        withTimeout(1000) {
+            songQueue.playQueue(audioManager)
+        }
+    }
 }
