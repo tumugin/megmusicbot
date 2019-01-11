@@ -10,6 +10,7 @@ import okio.source
 import org.koin.standalone.KoinComponent
 import org.koin.standalone.inject
 import sx.blah.discord.handle.audio.IAudioManager
+import java.io.IOException
 import java.util.logging.Level
 
 class HttpFileProvider(audioManager: IAudioManager, private val url: String) : KoinComponent,
@@ -27,7 +28,7 @@ class HttpFileProvider(audioManager: IAudioManager, private val url: String) : K
             val httpResponse = okHttpClient.newCall(request).execute()
             httpResponse.use {
                 if (httpResponse.isSuccessful.not()) {
-                    throw Exception("HTTP(S) connection fault with response code ${httpResponse.code()}.(URL=$url)")
+                    throw IOException("HTTP(S) connection fault with response code ${httpResponse.code()}.(URL=$url)")
                 }
                 val stream = httpResponse.body()!!.byteStream()
                 val streamSource = stream.source()

@@ -76,21 +76,19 @@ abstract class AbstractFileProvider(private val iAudioManager: IAudioManager) : 
         }
     }
 
-    suspend fun startStream() {
-        withContext(Dispatchers.Default) {
-            logger.log(Level.INFO, "[Provider] Provider starting...")
-            fetchOriginStream().start()
-            inputDataToEncoder().start()
-            getDataFromEncoder().start()
-            // Wait until playing ends.
-            while (true) {
-                delay(500)
-                if (audioInputStreamProvider?.isReady?.not() == true || job.isCancelled) {
-                    break
-                }
+    suspend fun startStream() = withContext(Dispatchers.Default) {
+        logger.log(Level.INFO, "[Provider] Provider starting...")
+        fetchOriginStream().start()
+        inputDataToEncoder().start()
+        getDataFromEncoder().start()
+        // Wait until playing ends.
+        while (true) {
+            delay(500)
+            if (audioInputStreamProvider?.isReady?.not() == true || job.isCancelled) {
+                break
             }
-            logger.log(Level.INFO, "[Provider] Song play end. Provider disposing...")
         }
+        logger.log(Level.INFO, "[Provider] Song play end. Provider disposing...")
     }
 
     fun stopStream() {

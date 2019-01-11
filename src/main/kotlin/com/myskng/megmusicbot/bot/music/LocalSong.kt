@@ -1,4 +1,4 @@
-package com.myskng.megmusicbot.bot
+package com.myskng.megmusicbot.bot.music
 
 import com.myskng.megmusicbot.provider.LocalFileProvider
 import sx.blah.discord.handle.audio.IAudioManager
@@ -7,17 +7,20 @@ data class LocalSong(
     override val title: String,
     override val artist: String,
     override val album: String,
-    val filePath: String,
-    override var onError: (exception: Exception) -> Unit = {}
+    val filePath: String
 ) : ISong {
-    var localFileProvider: LocalFileProvider? = null
+    override var onError: (exception: Exception) -> Unit = {}
+    private lateinit var localFileProvider: LocalFileProvider
+
     override fun stop() {
-        localFileProvider?.stopStream()
+        if (::localFileProvider.isInitialized) {
+            localFileProvider.stopStream()
+        }
     }
 
     override suspend fun play(iAudioManager: IAudioManager) {
         localFileProvider = LocalFileProvider(iAudioManager, filePath)
-        localFileProvider?.onError = onError
-        localFileProvider?.startStream()
+        localFileProvider.onError = onError
+        localFileProvider.startStream()
     }
 }
