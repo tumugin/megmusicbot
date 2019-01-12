@@ -6,14 +6,18 @@ import org.koin.standalone.inject
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent
 
 class BotCommand : KoinComponent {
-    private val botStrings by inject<DefaultLangStrings>()
-    fun onCommandRecive(command: String, arg: String, event: MessageReceivedEvent) {
+    private val processor by inject<BotCommandProcessor>()
+
+    suspend fun onCommandRecive(command: String, arg: String, event: MessageReceivedEvent) {
         when (command) {
             "help" -> {
-                event.channel.sendMessage(botStrings.botHelpText)
+                processor.outputHelpText(event)
             }
-            "playurl" ->{
-
+            "join" -> {
+                processor.joinVoiceChannel(event)
+            }
+            "leave" -> {
+                processor.leaveVoiceChannel(event)
             }
         }
     }
