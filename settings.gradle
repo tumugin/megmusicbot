@@ -1,2 +1,4 @@
 rootProject.name = 'com.myskng.megmusicbot'
 
+include 'harmonica'
+includeBuild './Exposed'
