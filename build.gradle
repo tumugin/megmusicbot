@@ -56,6 +56,7 @@ dependencies {
     implementation 'com.discord4j:Discord4J:2.10.1'
     implementation 'com.squareup.okhttp3:okhttp:3.12.1'
     implementation 'com.squareup.okio:okio:2.1.0'
+    implementation 'info.picocli:picocli:3.9.1'
     // DB
     // don't use it until bug fixes
     implementation 'org.jetbrains.exposed:exposed:0.11.3-SNAPSHOT'

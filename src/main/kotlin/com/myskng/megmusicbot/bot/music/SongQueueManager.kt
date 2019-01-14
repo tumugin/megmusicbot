@@ -16,8 +16,14 @@ class SongQueueManager : KoinComponent {
 
     private val job = Job()
     private val logger by inject<Logger>()
+    private var isPlaying = false
 
     suspend fun playQueue(audioManager: IAudioManager) {
+        when {
+            job.isCancelled || job.isCompleted -> throw IllegalStateException("Do not reuse SongQueueManager")
+            isPlaying -> throw IllegalStateException("Already playing queue. Do not rerun playQueue().")
+        }
+        isPlaying = true
         try {
             withContext(Dispatchers.Default + job) {
                 while (isActive) {

@@ -26,7 +26,7 @@ class SongScannerTest : AbstractDefaultTester(), KoinComponent {
         additionalKoinModules.add(module {
             single {
                 val store = BotStateStore()
-                store.config = BotConfig("UNUSED", "UNUSED", arrayOf("."))
+                store.config = BotConfig("UNUSED", "UNUSED", "UNUSED", arrayOf("."))
                 store
             }
         })
