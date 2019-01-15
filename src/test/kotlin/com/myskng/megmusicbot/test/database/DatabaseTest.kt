@@ -8,6 +8,8 @@ import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.*
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import java.sql.Connection
 import java.sql.DriverManager
 
@@ -21,6 +23,12 @@ class DatabaseTest {
             addLogger(StdOutSqlLogger)
             SchemaUtils.drop(Songs)
             SchemaUtils.create(Songs)
+            Songs.insert {
+                it[this.album] = "RefRain"
+                it[this.artist] = "上田麗奈"
+                it[this.filePath] = "./test2.flac"
+                it[this.title] = "ワタシ*ドリ"
+            }
         }
     }
 
@@ -32,24 +40,56 @@ class DatabaseTest {
         }
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = ["Ref", "RefRain"])
+    fun testCanFindSongAlbum(album: String) {
+        val songSearch = SongSearch()
+        val searchResult = songSearch.searchSong(arrayOf(SearchQuery(SongSearchType.Album, album)))
+        searchResult.first().also {
+            Assertions.assertEquals("RefRain", it.album)
+            Assertions.assertEquals("上田麗奈", it.artist)
+            Assertions.assertEquals("ワタシ*ドリ", it.title)
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = ["上田麗奈", "上田", "麗奈"])
+    fun testCanFindSongArtist(artist: String) {
+        val songSearch = SongSearch()
+        val searchResult = songSearch.searchSong(arrayOf(SearchQuery(SongSearchType.Artist, artist)))
+        searchResult.first().also {
+            Assertions.assertEquals("RefRain", it.album)
+            Assertions.assertEquals("上田麗奈", it.artist)
+            Assertions.assertEquals("ワタシ*ドリ", it.title)
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = ["ワタシ", "ドリ", "ワタシ*ドリ"])
+    fun testCanFindSongTitle(title: String) {
+        val songSearch = SongSearch()
+        val searchResult = songSearch.searchSong(arrayOf(SearchQuery(SongSearchType.Title, title)))
+        searchResult.first().also {
+            Assertions.assertEquals("RefRain", it.album)
+            Assertions.assertEquals("上田麗奈", it.artist)
+            Assertions.assertEquals("ワタシ*ドリ", it.title)
+        }
+    }
+
     @Test
     fun testCanFindSong() {
-        transaction {
-            Songs.insert {
-                it[this.album] = "RefRain"
-                it[this.artist] = "上田麗奈"
-                it[this.filePath] = "./test2.flac"
-                it[this.title] = "ワタシ*ドリ"
-            }
-        }
         val songSearch = SongSearch()
-        val albumSearchResult = songSearch.searchSong(arrayOf(SearchQuery(SongSearchType.Album, "RefRain")))
-        val artistSearchResult = songSearch.searchSong(arrayOf(SearchQuery(SongSearchType.Artist, "上田麗奈")))
-        val titleSearchResult = songSearch.searchSong(arrayOf(SearchQuery(SongSearchType.Album, "ワタシ*ドリ")))
-        arrayOf(albumSearchResult, artistSearchResult, titleSearchResult).forEach {
-            Assertions.assertEquals("RefRain", it.first().album)
-            Assertions.assertEquals("上田麗奈", it.first().artist)
-            Assertions.assertEquals("ワタシ*ドリ", it.first().title)
+        val searchQueries =
+            arrayOf(
+                SearchQuery(SongSearchType.Album, "RefRain"),
+                SearchQuery(SongSearchType.Artist, "上田麗奈"),
+                SearchQuery(SongSearchType.Title, "ワタシ*ドリ")
+            )
+        val searchResult = songSearch.searchSong(searchQueries)
+        searchResult.first().also {
+            Assertions.assertEquals("RefRain", it.album)
+            Assertions.assertEquals("上田麗奈", it.artist)
+            Assertions.assertEquals("ワタシ*ドリ", it.title)
         }
     }
 }
