@@ -18,7 +18,7 @@ abstract class AbstractFileProvider(private val iAudioManager: IAudioManager) : 
 
     protected val logger by inject<Logger>()
     protected val originStreamQueue = Channel<ByteArray>(Int.MAX_VALUE)
-    protected val coroutineContext = Dispatchers.Default + job
+    protected val coroutineContext = Dispatchers.IO + job
 
     var onError: ((exception: Exception) -> Unit)? = null
 
