@@ -3,9 +3,7 @@ package com.myskng.megmusicbot.bot.music
 import com.myskng.megmusicbot.provider.HttpFileProvider
 import sx.blah.discord.handle.audio.IAudioManager
 
-data class HTTPFileSong(
-    val fileUrl: String
-) : ISong {
+data class HTTPFileSong(val fileUrl: String) : ISong {
     override var onError: (exception: Exception) -> Unit = {}
     override val title: String = "Remote HTTP Song"
     override val artist: String = "Remote HTTP Song"
