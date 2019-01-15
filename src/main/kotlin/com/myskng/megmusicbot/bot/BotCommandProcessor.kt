@@ -11,7 +11,7 @@ import org.koin.standalone.KoinComponent
 import org.koin.standalone.inject
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent
 
-class BotCommandProcessor : KoinComponent {
+open class BotCommandProcessor : KoinComponent {
     private val store by inject<BotStateStore>()
     private val botStrings by inject<DefaultLangStrings>()
     private val songSearch by inject<SongSearch>()

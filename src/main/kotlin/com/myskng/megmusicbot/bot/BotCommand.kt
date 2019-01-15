@@ -1,5 +1,8 @@
 package com.myskng.megmusicbot.bot
 
+import com.myskng.megmusicbot.database.SearchQuery
+import com.myskng.megmusicbot.database.SongSearchType
+import com.myskng.megmusicbot.exception.CommandSyntaxException
 import org.koin.standalone.KoinComponent
 import org.koin.standalone.inject
 import picocli.CommandLine
@@ -9,11 +12,11 @@ class BotCommand : KoinComponent {
     private val processor by inject<BotCommandProcessor>()
 
     class DiscordCommandLine {
-        @CommandLine.Option(names = ["--title"])
+        @CommandLine.Option(names = ["/title"])
         var title: String? = null
-        @CommandLine.Option(names = ["--artist"])
+        @CommandLine.Option(names = ["/artist"])
         var artist: String? = null
-        @CommandLine.Option(names = ["--album"])
+        @CommandLine.Option(names = ["/album"])
         var album: String? = null
         @CommandLine.Option(names = ["/help"])
         var isHelp = false
@@ -27,6 +30,9 @@ class BotCommand : KoinComponent {
         var play: Int = -1
         @CommandLine.Option(names = ["/queue"])
         var isQueue = false
+
+        val isSearchMode
+            get() = isSearch || title != null || artist != null || album != null
     }
 
     companion object {
@@ -41,11 +47,22 @@ class BotCommand : KoinComponent {
             }
             return resultList.toTypedArray()
         }
+
+        fun isBotCommand(command: String): Boolean {
+            val commandArray = splitCommandToArray(command)
+            val names = CommandLine(DiscordCommandLine()).commandSpec.optionsMap()
+            return CommandLine(DiscordCommandLine()).commandSpec.optionsMap()
+                .any { it.key == commandArray.firstOrNull() }
+        }
     }
 
     suspend fun onCommandRecive(command: String, event: MessageReceivedEvent) {
         val discordCommandLine = DiscordCommandLine()
-        CommandLine(discordCommandLine).parse(*splitCommandToArray(command))
+        try {
+            CommandLine(discordCommandLine).parse(*splitCommandToArray(command))
+        } catch (ex: CommandLine.PicocliException) {
+            throw CommandSyntaxException("コマンド解析中にエラーが発生しました: ${ex.message}")
+        }
         when {
             discordCommandLine.isHelp -> {
                 processor.outputHelpText(event)
@@ -56,14 +73,27 @@ class BotCommand : KoinComponent {
             discordCommandLine.isLeave -> {
                 processor.leaveVoiceChannel(event)
             }
-            discordCommandLine.isSearch -> {
-
+            discordCommandLine.isSearchMode -> {
+                val queryList = mutableListOf<SearchQuery>()
+                if (discordCommandLine.album != null) {
+                    queryList.add(SearchQuery(SongSearchType.Album, discordCommandLine.album!!))
+                }
+                if (discordCommandLine.artist != null) {
+                    queryList.add(SearchQuery(SongSearchType.Artist, discordCommandLine.artist!!))
+                }
+                if (discordCommandLine.title != null) {
+                    queryList.add(SearchQuery(SongSearchType.Title, discordCommandLine.title!!))
+                }
+                processor.searchSong(queryList.toTypedArray(), event)
             }
             discordCommandLine.play != -1 -> {
-
+                processor.playSong(discordCommandLine.play - 1, event)
             }
             discordCommandLine.isQueue -> {
-
+                processor.printQueue(event)
+            }
+            else -> {
+                throw CommandSyntaxException("コマンドの記法が間違っています。")
             }
         }
     }
