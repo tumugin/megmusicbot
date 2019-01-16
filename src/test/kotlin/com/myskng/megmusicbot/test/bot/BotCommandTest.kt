@@ -136,8 +136,16 @@ class BotCommandTest : AbstractDefaultTester() {
         }
     }
 
+    @Test
+    fun testPlayCommand() = runBlocking {
+        val botCommand = BotCommand()
+        botCommand.onCommandRecive("/play 10", mock())
+        Assertions.assertEquals(mockBotCommandProcessor::playSong.name, mockBotCommandProcessor.calledFunctionName)
+        Assertions.assertEquals(9, mockBotCommandProcessor.playSongIndex)
+    }
+
     @ParameterizedTest
-    @ValueSource(strings = ["/play ueshamaaaa", "/search hogehoge", "/search /artist hoge /artist hoge"])
+    @ValueSource(strings = ["/play ueshamaaaa", "/search hogehoge", "/search /artist hoge /artist hoge", "/search"])
     fun testCommandSyntaxException(command: String) = runBlocking {
         val botCommand = BotCommand()
         try {

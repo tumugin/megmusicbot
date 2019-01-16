@@ -84,6 +84,9 @@ class BotCommand : KoinComponent {
                 if (discordCommandLine.title != null) {
                     queryList.add(SearchQuery(SongSearchType.Title, discordCommandLine.title!!))
                 }
+                if (queryList.isEmpty()) {
+                    throw CommandSyntaxException("検索条件が空です。")
+                }
                 processor.searchSong(queryList.toTypedArray(), event)
             }
             discordCommandLine.play != -1 -> {
