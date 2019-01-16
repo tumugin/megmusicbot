@@ -31,6 +31,8 @@ open class BotCommandProcessor : KoinComponent {
                 randomSongPlayer.onEmptyQueue()
             }
             store.songQueue.playQueue(channel.guild.audioManager)
+        } else {
+            event.channel.sendMessage("@${event.message.author.name} ボイスチャンネルに参加してください")
         }
     }
 
