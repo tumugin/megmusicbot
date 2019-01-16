@@ -1,5 +1,6 @@
 package com.myskng.megmusicbot.bot
 
+import com.myskng.megmusicbot.exception.CommandSyntaxException
 import com.myskng.megmusicbot.store.BotStateStore
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
@@ -35,7 +36,13 @@ class BotConnectionManager : KoinComponent {
 
     private val onMessageReceive = IListener<MessageReceivedEvent> { event ->
         GlobalScope.async {
-            botCommand.onCommandRecive(event.message.content, event)
+            if (BotCommand.isBotCommand(event.message.content)) {
+                try {
+                    botCommand.onCommandRecive(event.message.content, event)
+                } catch (ex: CommandSyntaxException) {
+                    event.channel.sendMessage(ex.message)
+                }
+            }
         }
     }
 
