@@ -36,7 +36,7 @@ class BotConnectionManager : KoinComponent {
 
     private val onMessageReceive = IListener<MessageReceivedEvent> { event ->
         GlobalScope.async {
-            if (BotCommand.isBotCommand(event.message.content)) {
+            if (botCommand.isBotCommand(event.message.content)) {
                 try {
                     botCommand.onCommandRecive(event.message.content, event)
                 } catch (ex: CommandSyntaxException) {

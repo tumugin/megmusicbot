@@ -35,25 +35,23 @@ class BotCommand : KoinComponent {
             get() = isSearch || title != null || artist != null || album != null
     }
 
-    companion object {
-        fun splitCommandToArray(command: String): Array<String> {
-            val regex = Regex("\"(\"|(?!\").)+\"|[^ ]+")
-            val resultList = mutableListOf<String>()
-            regex.findAll(command).forEach {
-                var match = it.value
-                match = match.removePrefix("\"")
-                match = match.removeSuffix("\"")
-                resultList.add(match)
-            }
-            return resultList.toTypedArray()
+    fun splitCommandToArray(command: String): Array<String> {
+        val regex = Regex("\"(\"|(?!\").)+\"|[^ ]+")
+        val resultList = mutableListOf<String>()
+        regex.findAll(command).forEach {
+            var match = it.value
+            match = match.removePrefix("\"")
+            match = match.removeSuffix("\"")
+            resultList.add(match)
         }
+        return resultList.toTypedArray()
+    }
 
-        fun isBotCommand(command: String): Boolean {
-            val commandArray = splitCommandToArray(command)
-            val names = CommandLine(DiscordCommandLine()).commandSpec.optionsMap()
-            return CommandLine(DiscordCommandLine()).commandSpec.optionsMap()
-                .any { it.key == commandArray.firstOrNull() }
-        }
+    fun isBotCommand(command: String): Boolean {
+        val commandArray = splitCommandToArray(command)
+        val names = CommandLine(DiscordCommandLine()).commandSpec.optionsMap()
+        return CommandLine(DiscordCommandLine()).commandSpec.optionsMap()
+            .any { it.key == commandArray.firstOrNull() }
     }
 
     suspend fun onCommandRecive(command: String, event: MessageReceivedEvent) {

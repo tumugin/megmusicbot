@@ -47,7 +47,7 @@ class BotCommandTest : AbstractDefaultTester() {
     fun testCommandSplitter() {
         val testText = "/title 楽園 /artist 関裕美"
         val testArray = arrayOf("/title", "楽園", "/artist", "関裕美")
-        val splittedArray = BotCommand.splitCommandToArray(testText)
+        val splittedArray = BotCommand().splitCommandToArray(testText)
         Assertions.assertArrayEquals(testArray, splittedArray)
     }
 
@@ -55,7 +55,7 @@ class BotCommandTest : AbstractDefaultTester() {
     fun testCommandSplitterWithQuote() {
         val testText = "/title \"Last Kiss\" /artist 三船美優"
         val testArray = arrayOf("/title", "Last Kiss", "/artist", "三船美優")
-        val splittedArray = BotCommand.splitCommandToArray(testText)
+        val splittedArray = BotCommand().splitCommandToArray(testText)
         Assertions.assertArrayEquals(testArray, splittedArray)
     }
 
@@ -159,12 +159,12 @@ class BotCommandTest : AbstractDefaultTester() {
     @ParameterizedTest
     @ValueSource(strings = ["/help", "/join", "/leave", "/queue", "/play", "/search", "/artist", "/album", "/title"])
     fun testIsBotCommand(command: String) {
-        Assertions.assertTrue(BotCommand.isBotCommand(command))
+        Assertions.assertTrue(BotCommand().isBotCommand(command))
     }
 
     @ParameterizedTest
     @ValueSource(strings = ["上田麗奈", "/nanyaine", "白石紬 /help"])
     fun testIsNotBotCommand(command: String) {
-        Assertions.assertFalse(BotCommand.isBotCommand(command))
+        Assertions.assertFalse(BotCommand().isBotCommand(command))
     }
 }
