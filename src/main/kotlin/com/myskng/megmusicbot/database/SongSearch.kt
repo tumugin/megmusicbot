@@ -8,8 +8,8 @@ import org.jetbrains.exposed.sql.transactions.transaction
 
 data class SearchQuery(val type: SongSearchType, val searchString: String)
 
-class SongSearch {
-    fun searchSong(query: Array<SearchQuery>): List<LocalSong> {
+open class SongSearch {
+    open fun searchSong(query: Array<SearchQuery>): List<LocalSong> {
         val selectQuery = Songs.select {
             var sqlQuery: Op<Boolean>? = null
             query.forEach {
