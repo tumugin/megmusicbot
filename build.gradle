@@ -1,9 +1,10 @@
 buildscript {
+    ext.harmonicaVersion = '1.1.12'
     repositories {
         maven { url 'https://jitpack.io' }
     }
     dependencies {
-        classpath 'com.github.KenjiOhtsuka:harmonica:1.1.10'
+        classpath "com.github.KenjiOhtsuka:harmonica:$harmonicaVersion"
     }
 }
 
@@ -60,9 +61,7 @@ dependencies {
     // DB
     // don't use it until bug fixes
     implementation 'org.jetbrains.exposed:exposed:0.11.3-SNAPSHOT'
-    // don't use it until bug fixes
-    // classpath 'com.github.KenjiOhtsuka:harmonica:1.1.10'
-    implementation project(':harmonica')
+    implementation "com.github.KenjiOhtsuka:harmonica:$harmonicaVersion"
     implementation "org.xerial:sqlite-jdbc:$sqliteVersion"
     // Music Tag
     implementation 'net.jthink:jaudiotagger:2.2.5'

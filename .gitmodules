@@ -1,6 +1,3 @@
-[submodule "harmonica"]
-	path = harmonica
-	url = https://github.com/tumugin/harmonica.git
 [submodule "Exposed"]
 	path = Exposed
 	url = https://github.com/tumugin/Exposed.git
