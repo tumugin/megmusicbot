@@ -25,9 +25,10 @@ class SongScannerTest : AbstractDefaultTester(), KoinComponent {
     override fun setupKoin() {
         additionalKoinModules.add(module {
             single {
-                val store = BotStateStore()
-                store.config = BotConfig("UNUSED", "UNUSED", "UNUSED", arrayOf("."))
-                store
+                BotStateStore()
+            }
+            single {
+                BotConfig("UNUSED", "UNUSED", "UNUSED", arrayOf("."))
             }
         })
         super.setupKoin()

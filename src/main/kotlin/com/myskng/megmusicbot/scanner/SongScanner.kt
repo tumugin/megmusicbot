@@ -1,6 +1,7 @@
 package com.myskng.megmusicbot.scanner
 
 import com.myskng.megmusicbot.database.Songs
+import com.myskng.megmusicbot.store.BotConfig
 import com.myskng.megmusicbot.store.BotStateStore
 import org.jaudiotagger.audio.AudioFileIO
 import org.jaudiotagger.audio.exceptions.CannotReadException
@@ -22,10 +23,11 @@ import java.util.logging.Logger
 class SongScanner : KoinComponent {
     val state by inject<BotStateStore>()
     val logger by inject<Logger>()
+    val config by inject<BotConfig>()
     val musicFileExtension = arrayOf(".mp3", ".m4a", ".ogg", ".wma", ".flac")
 
     fun scanFiles() {
-        state.config.musicPaths.forEach { path ->
+        config.musicPaths.forEach { path ->
             var addedSongs = 0
             logger.log(Level.INFO, "[SongScanner] Scanning folder $path")
             Files.find(
