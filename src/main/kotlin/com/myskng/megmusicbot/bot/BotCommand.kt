@@ -9,7 +9,7 @@ import picocli.CommandLine
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent
 
 class BotCommand : KoinComponent {
-    private val processor by inject<BotCommandProcessor>()
+    val processor by inject<BotCommandProcessor>()
 
     class DiscordCommandLine {
         @CommandLine.Option(names = ["/title"])

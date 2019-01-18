@@ -2,7 +2,6 @@ package com.myskng.megmusicbot.bot
 
 import com.myskng.megmusicbot.exception.CommandSyntaxException
 import com.myskng.megmusicbot.store.BotConfig
-import com.myskng.megmusicbot.store.BotStateStore
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import org.koin.standalone.KoinComponent
@@ -17,11 +16,10 @@ import java.util.logging.Level
 import java.util.logging.Logger
 
 class BotConnectionManager : KoinComponent {
-    val store by inject<BotStateStore>()
-    val logger by inject<Logger>()
-    val botCommand by inject<BotCommand>()
-    val config by inject<BotConfig>()
-    lateinit var discordClient: IDiscordClient
+    private val logger by inject<Logger>()
+    private val botCommand by inject<BotCommand>()
+    private val config by inject<BotConfig>()
+    private lateinit var discordClient: IDiscordClient
 
     fun initializeBotConnection() {
         val clientBuilder = ClientBuilder()
@@ -50,8 +48,7 @@ class BotConnectionManager : KoinComponent {
 
     private val onBotOnlyOnVoiceChannelEvent = IListener<UserVoiceChannelLeaveEvent> { event ->
         if (event.voiceChannel.connectedUsers.count() == 1 && event.voiceChannel.isConnected) {
-            store.songQueue.stop()
-            event.voiceChannel.leave()
+            botCommand.processor.leaveVoiceChannel(event)
         }
     }
 }

@@ -10,6 +10,7 @@ import com.myskng.megmusicbot.text.DefaultLangStrings
 import org.koin.standalone.KoinComponent
 import org.koin.standalone.inject
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent
+import sx.blah.discord.handle.impl.events.guild.voice.user.UserVoiceChannelLeaveEvent
 
 open class BotCommandProcessor : KoinComponent {
     private val store by inject<BotStateStore>()
@@ -47,6 +48,11 @@ open class BotCommandProcessor : KoinComponent {
         } else {
             event.channel.sendMessage("@${event.message.author.name} 参加していないチャンネルに対する操作はできません。")
         }
+    }
+
+    fun leaveVoiceChannel(event: UserVoiceChannelLeaveEvent) {
+        store.songQueue.stop()
+        event.voiceChannel.leave()
     }
 
     open fun searchSong(query: Array<SearchQuery>, event: MessageReceivedEvent) {
