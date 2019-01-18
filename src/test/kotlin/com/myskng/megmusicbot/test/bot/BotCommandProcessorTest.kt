@@ -9,10 +9,7 @@ import com.myskng.megmusicbot.database.SongSearch
 import com.myskng.megmusicbot.store.BotStateStore
 import com.myskng.megmusicbot.test.base.AbstractDefaultTester
 import com.myskng.megmusicbot.text.DefaultLangStrings
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.atLeastOnce
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.*
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.*
 import org.koin.dsl.module.module
@@ -22,6 +19,7 @@ import org.koin.standalone.inject
 import org.mockito.Mockito
 import sx.blah.discord.api.IDiscordClient
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent
+import sx.blah.discord.handle.impl.obj.VoiceChannel
 import sx.blah.discord.handle.obj.*
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -108,10 +106,14 @@ class BotCommandProcessorTest : KoinComponent, AbstractDefaultTester() {
             on { voiceChannels }.thenAnswer { listOf(mockVoiceChannel) }
         }
         val mockChannel = mock<IChannel>()
+        val mockGuild = mock<IGuild> {
+            on { voiceChannels }.thenAnswer { listOf(mockVoiceChannel) }
+        }
         val mockEvent = mock<MessageReceivedEvent>(defaultAnswer = Mockito.RETURNS_DEEP_STUBS) {
             on { client }.thenAnswer { mockClient }
             on { author }.thenAnswer { mockUser }
             on { channel }.thenAnswer { mockChannel }
+            on { guild }.thenAnswer { mockGuild }
         }
         botCommandProcessor.joinVoiceChannel(mockEvent)
         verify(mockVoiceChannel, atLeastOnce()).join()
@@ -128,16 +130,21 @@ class BotCommandProcessorTest : KoinComponent, AbstractDefaultTester() {
         val mockVoiceChannel = mock<IVoiceChannel> {
             on { connectedUsers }.thenAnswer { listOf(mockUser) }
             on { guild }.thenAnswer { mock<IGuild>(defaultAnswer = Mockito.RETURNS_DEEP_STUBS) }
+            on { isConnected }.thenAnswer { true }
         }
         val mockClient = mock<IDiscordClient> {
             on { voiceChannels }.thenAnswer { listOf(mockVoiceChannel) }
             on { connectedVoiceChannels }.thenAnswer { listOf(mockVoiceChannel) }
         }
         val mockChannel = mock<IChannel>()
+        val mockGuild = mock<IGuild> {
+            on { voiceChannels }.thenAnswer { listOf(mockVoiceChannel) }
+        }
         val mockEvent = mock<MessageReceivedEvent>(defaultAnswer = Mockito.RETURNS_DEEP_STUBS) {
             on { client }.thenAnswer { mockClient }
             on { author }.thenAnswer { mockUser }
             on { channel }.thenAnswer { mockChannel }
+            on { guild }.thenAnswer { mockGuild }
         }
         botCommandProcessor.leaveVoiceChannel(mockEvent)
         verify(mockSongQueueManager, atLeastOnce()).stop()

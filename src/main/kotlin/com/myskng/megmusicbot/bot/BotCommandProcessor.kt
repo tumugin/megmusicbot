@@ -21,9 +21,8 @@ open class BotCommandProcessor : KoinComponent {
     }
 
     open suspend fun joinVoiceChannel(event: MessageReceivedEvent) {
-        val client = event.client
         val channel =
-            client.voiceChannels.firstOrNull {
+            event.guild.voiceChannels.firstOrNull {
                 it.connectedUsers.any { user -> user.longID == event.author.longID }
             }
         if (channel != null) {
@@ -42,8 +41,8 @@ open class BotCommandProcessor : KoinComponent {
     open fun leaveVoiceChannel(event: MessageReceivedEvent) {
         store.songQueue.stop()
         val channel =
-            event.client.connectedVoiceChannels.firstOrNull { it.connectedUsers.any { user -> user.longID == event.author.longID } }
-        if (channel != null) {
+            event.guild.voiceChannels.firstOrNull { it.connectedUsers.any { user -> user.longID == event.author.longID } }
+        if (channel != null && channel.isConnected) {
             channel.leave()
         } else {
             event.channel.sendMessage("@${event.message.author.name} 参加していないチャンネルに対する操作はできません。")

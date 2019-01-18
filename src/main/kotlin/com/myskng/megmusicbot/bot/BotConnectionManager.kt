@@ -47,9 +47,7 @@ class BotConnectionManager : KoinComponent {
     }
 
     private val onBotOnlyOnVoiceChannelEvent = IListener<UserVoiceChannelLeaveEvent> { event ->
-        if (discordClient.connectedVoiceChannels.contains(event.voiceChannel)
-            && event.voiceChannel.connectedUsers.count() == 1
-        ) {
+        if (event.voiceChannel.connectedUsers.count() == 1 && event.voiceChannel.isConnected) {
             store.songQueue.stop()
             event.voiceChannel.leave()
         }
