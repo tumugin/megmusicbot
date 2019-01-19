@@ -19,6 +19,7 @@ import org.junit.jupiter.params.provider.ValueSource
 import org.koin.dsl.module.module
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent
 import kotlin.properties.Delegates
+import kotlin.reflect.jvm.reflect
 
 class BotCommandTest : AbstractDefaultTester() {
     private lateinit var mockBotCommandProcessor: MockBotCommandProcessor
@@ -77,7 +78,8 @@ class BotCommandTest : AbstractDefaultTester() {
         }
 
         override fun leaveVoiceChannel(event: MessageReceivedEvent) {
-            calledFunctionName = this::leaveVoiceChannel.name
+            val func: (MessageReceivedEvent) -> Unit = this::leaveVoiceChannel
+            calledFunctionName = func.reflect()!!.name
         }
 
         override fun searchSong(query: Array<SearchQuery>, event: MessageReceivedEvent) {
@@ -109,10 +111,13 @@ class BotCommandTest : AbstractDefaultTester() {
                 mockBotCommandProcessor::joinVoiceChannel.name,
                 mockBotCommandProcessor.calledFunctionName
             )
-            "/leave" -> Assertions.assertEquals(
-                mockBotCommandProcessor::leaveVoiceChannel.name,
-                mockBotCommandProcessor.calledFunctionName
-            )
+            "/leave" -> {
+                val func: (MessageReceivedEvent) -> Unit = mockBotCommandProcessor::leaveVoiceChannel
+                Assertions.assertEquals(
+                    func.reflect()!!.name,
+                    mockBotCommandProcessor.calledFunctionName
+                )
+            }
             "/queue" -> Assertions.assertEquals(
                 mockBotCommandProcessor::printQueue.name,
                 mockBotCommandProcessor.calledFunctionName

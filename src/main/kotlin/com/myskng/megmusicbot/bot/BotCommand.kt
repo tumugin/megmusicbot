@@ -49,7 +49,6 @@ class BotCommand : KoinComponent {
 
     fun isBotCommand(command: String): Boolean {
         val commandArray = splitCommandToArray(command)
-        val names = CommandLine(DiscordCommandLine()).commandSpec.optionsMap()
         return CommandLine(DiscordCommandLine()).commandSpec.optionsMap()
             .any { it.key == commandArray.firstOrNull() }
     }

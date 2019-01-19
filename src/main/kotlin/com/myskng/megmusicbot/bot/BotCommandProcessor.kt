@@ -50,7 +50,7 @@ open class BotCommandProcessor : KoinComponent {
         }
     }
 
-    fun leaveVoiceChannel(event: UserVoiceChannelLeaveEvent) {
+    open fun leaveVoiceChannel(event: UserVoiceChannelLeaveEvent) {
         store.songQueue.stop()
         event.voiceChannel.leave()
     }
