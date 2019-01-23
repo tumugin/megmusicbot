@@ -3,7 +3,7 @@ package com.myskng.megmusicbot.bot
 import com.myskng.megmusicbot.exception.CommandSyntaxException
 import com.myskng.megmusicbot.store.BotConfig
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import org.koin.standalone.KoinComponent
 import org.koin.standalone.get
 import org.koin.standalone.inject
@@ -36,7 +36,7 @@ class BotConnectionManager : KoinComponent {
     }
 
     private val onMessageReceive = IListener<MessageReceivedEvent> { event ->
-        GlobalScope.async {
+        GlobalScope.launch {
             val botCommand = botCommands.getOrPut(event.guild.stringID, get())
             if (botCommand.isBotCommand(event.message.content)) {
                 try {

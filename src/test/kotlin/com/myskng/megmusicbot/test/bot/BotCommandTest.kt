@@ -45,6 +45,23 @@ class BotCommandTest : AbstractDefaultTester() {
     }
 
     @Test
+    fun testDiscordCommandLineIsSearchMode() {
+        // test with default value
+        val discordCommandLineTestCaseA = BotCommand.DiscordCommandLine()
+        Assertions.assertFalse(discordCommandLineTestCaseA.isSearchMode)
+        val discordCommandLineTestCaseB = BotCommand.DiscordCommandLine()
+        discordCommandLineTestCaseB.also {
+            it.isSearch = true
+        }
+        Assertions.assertTrue(discordCommandLineTestCaseB.isSearchMode)
+        val discordCommandLineTestCaseC = BotCommand.DiscordCommandLine()
+        discordCommandLineTestCaseC.also {
+            it.title = "hogehoge"
+        }
+        Assertions.assertTrue(discordCommandLineTestCaseC.isSearchMode)
+    }
+
+    @Test
     fun testCommandSplitter() {
         val testText = "/title 楽園 /artist 関裕美"
         val testArray = arrayOf("/title", "楽園", "/artist", "関裕美")

@@ -19,6 +19,7 @@ import org.koin.standalone.inject
 import org.mockito.Mockito
 import sx.blah.discord.api.IDiscordClient
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent
+import sx.blah.discord.handle.impl.events.guild.voice.user.UserVoiceChannelLeaveEvent
 import sx.blah.discord.handle.impl.obj.VoiceChannel
 import sx.blah.discord.handle.obj.*
 import java.util.logging.Level
@@ -149,6 +150,18 @@ class BotCommandProcessorTest : KoinComponent, AbstractDefaultTester() {
         botCommandProcessor.leaveVoiceChannel(mockEvent)
         verify(mockSongQueueManager, atLeastOnce()).stop()
         verify(mockVoiceChannel, atLeastOnce()).leave()
+    }
+
+    @Test
+    fun leaveVoiceChannelWithUserVoiceChannelLeaveEventTest() {
+        val botCommandProcessor = BotCommandProcessor()
+        val mockVoiceChannel = mock<IVoiceChannel>()
+        val mockUserVoiceChannelLeaveEvent = mock<UserVoiceChannelLeaveEvent> {
+            on { voiceChannel }.thenAnswer { mockVoiceChannel }
+        }
+        botCommandProcessor.leaveVoiceChannel(mockUserVoiceChannelLeaveEvent)
+        verify(mockVoiceChannel, atLeastOnce()).leave()
+        verify(mockSongQueueManager, atLeastOnce()).stop()
     }
 
     @Test
