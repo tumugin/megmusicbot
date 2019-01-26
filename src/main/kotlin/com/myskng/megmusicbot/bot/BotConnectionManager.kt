@@ -2,7 +2,10 @@ package com.myskng.megmusicbot.bot
 
 import com.myskng.megmusicbot.exception.CommandSyntaxException
 import com.myskng.megmusicbot.store.BotConfig
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import org.koin.standalone.KoinComponent
 import org.koin.standalone.get
 import org.koin.standalone.inject
@@ -40,7 +43,7 @@ class BotConnectionManager : KoinComponent, CoroutineScope {
 
     val onMessageReceive = IListener<MessageReceivedEvent> { event ->
         launch {
-            val botCommand = botCommands.getOrPut(event.guild.stringID, get())
+            val botCommand = botCommands.getOrPut(event.guild.stringID) { get() }
             if (botCommand.isBotCommand(event.message.content)) {
                 try {
                     botCommand.onCommandRecive(event.message.content, event)
@@ -53,7 +56,7 @@ class BotConnectionManager : KoinComponent, CoroutineScope {
 
     private val onBotOnlyOnVoiceChannelEvent = IListener<UserVoiceChannelLeaveEvent> { event ->
         if (event.voiceChannel.connectedUsers.count() == 1 && event.voiceChannel.isConnected) {
-            val botCommand = botCommands.getOrPut(event.guild.stringID, get())
+            val botCommand = botCommands.getOrPut(event.guild.stringID) { get() }
             botCommand.processor.leaveVoiceChannel(event)
         }
     }
