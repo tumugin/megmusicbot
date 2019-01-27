@@ -4,6 +4,7 @@ import com.myskng.megmusicbot.encoder.IEncoderProcess
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import org.koin.standalone.KoinComponent
+import org.koin.standalone.get
 import org.koin.standalone.inject
 import sx.blah.discord.handle.audio.IAudioManager
 import sx.blah.discord.util.audio.providers.AudioInputStreamProvider
@@ -14,7 +15,7 @@ import javax.sound.sampled.AudioSystem
 abstract class AbstractFileProvider(private val iAudioManager: IAudioManager) : KoinComponent {
     private val encoderProcess by inject<IEncoderProcess>()
     private var audioInputStreamProvider: AudioInputStreamProvider? = null
-    private val job = Job()
+    private val job = Job(get())
 
     protected val logger by inject<Logger>()
     protected val originStreamQueue = Channel<ByteArray>(Int.MAX_VALUE)

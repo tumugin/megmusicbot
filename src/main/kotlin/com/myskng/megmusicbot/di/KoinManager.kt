@@ -7,6 +7,7 @@ import com.myskng.megmusicbot.encoder.FFMpegEncoder
 import com.myskng.megmusicbot.store.BotConfig
 import com.myskng.megmusicbot.store.BotStateStore
 import com.myskng.megmusicbot.text.DefaultLangStrings
+import kotlinx.coroutines.SupervisorJob
 import okhttp3.OkHttpClient
 import org.koin.dsl.module.module
 import org.koin.standalone.StandAloneContext.startKoin
@@ -41,6 +42,9 @@ fun initializeKoinProduction(config: BotConfig) {
         }
         factory {
             BotCommandProcessor()
+        }
+        single {
+            SupervisorJob()
         }
     }
     startKoin(listOf(module))

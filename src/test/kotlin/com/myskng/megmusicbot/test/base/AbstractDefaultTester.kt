@@ -4,6 +4,7 @@ import com.myskng.megmusicbot.encoder.IEncoderProcess
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
+import kotlinx.coroutines.SupervisorJob
 import okhttp3.OkHttpClient
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
@@ -52,6 +53,9 @@ abstract class AbstractDefaultTester {
             }
             single {
                 OkHttpClient()
+            }
+            single {
+                SupervisorJob()
             }
         }
         StandAloneContext.startKoin(listOf(modules).plus(additionalKoinModules))
