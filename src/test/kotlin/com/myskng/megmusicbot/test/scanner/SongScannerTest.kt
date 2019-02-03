@@ -5,6 +5,7 @@ import com.myskng.megmusicbot.scanner.SongScanner
 import com.myskng.megmusicbot.store.BotConfig
 import com.myskng.megmusicbot.store.BotStateStore
 import com.myskng.megmusicbot.test.base.AbstractDefaultTester
+import kotlinx.coroutines.runBlocking
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SchemaUtils.create
 import org.jetbrains.exposed.sql.SchemaUtils.drop
@@ -54,9 +55,9 @@ class SongScannerTest : AbstractDefaultTester(), KoinComponent {
     }
 
     @Test
-    fun canReadTag() {
+    fun canReadTag() = runBlocking {
         val songScanner = SongScanner()
-        songScanner.scanFiles()
+        songScanner.scanFiles().await()
         val list = transaction {
             Songs.selectAll().toList()
         }

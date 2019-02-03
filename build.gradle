@@ -64,6 +64,8 @@ dependencies {
     implementation 'org.jetbrains.exposed:exposed:0.11.3-SNAPSHOT'
     implementation "com.github.KenjiOhtsuka:harmonica:$harmonicaVersion"
     implementation "org.xerial:sqlite-jdbc:$sqliteVersion"
+    // JSON
+    implementation "com.fasterxml.jackson.module:jackson-module-kotlin:2.9.+"
     // Music Tag
     implementation 'net.jthink:jaudiotagger:2.2.5'
     // Test libs

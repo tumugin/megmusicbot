@@ -2,7 +2,10 @@ package com.myskng.megmusicbot.scanner
 
 import com.myskng.megmusicbot.database.Songs
 import com.myskng.megmusicbot.store.BotConfig
-import com.myskng.megmusicbot.store.BotStateStore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import org.jaudiotagger.audio.AudioFileIO
 import org.jaudiotagger.audio.exceptions.CannotReadException
 import org.jaudiotagger.audio.exceptions.InvalidAudioFrameException
@@ -12,21 +15,60 @@ import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.koin.standalone.KoinComponent
+import org.koin.standalone.get
 import org.koin.standalone.inject
+import java.io.File
 import java.io.IOException
 import java.nio.file.FileVisitOption
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.logging.Level
 import java.util.logging.Logger
+import kotlin.coroutines.CoroutineContext
 
-class SongScanner : KoinComponent {
-    val state by inject<BotStateStore>()
+class SongScanner : KoinComponent, CoroutineScope {
+    private val job = Job(get())
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Default + job
+
     val logger by inject<Logger>()
     val config by inject<BotConfig>()
     val musicFileExtension = arrayOf(".mp3", ".m4a", ".ogg", ".wma", ".flac")
 
-    fun scanFiles() {
+    private fun addFileToDB(file: File): Boolean {
+        try {
+            val audioFile = AudioFileIO.read(file)
+            val tags = audioFile.tag
+            return transaction {
+                if (Songs.select { Songs.filePath eq file.toString() }.empty()) {
+                    Songs.insert {
+                        it[Songs.title] = tags.getFirst(FieldKey.TITLE)
+                        it[Songs.album] = tags.getFirst(FieldKey.ALBUM)
+                        it[Songs.artist] = tags.getFirst(FieldKey.ARTIST)
+                        it[Songs.filePath] = file.absolutePath
+                    }
+                    true
+                } else {
+                    false
+                }
+            }
+        } catch (ex: Exception) {
+            when (ex) {
+                is IOException, is CannotReadException -> {
+                    logger.log(Level.WARNING, "[SongScanner] IOException while reading ${file.absolutePath}")
+                }
+                is TagException, is InvalidAudioFrameException -> {
+                    logger.log(Level.WARNING, "[SongScanner] Invalid audio file detected on ${file.absolutePath}")
+                }
+                else -> {
+                    throw ex
+                }
+            }
+        }
+        return false
+    }
+
+    fun scanFiles() = async {
         config.musicPaths.forEach { path ->
             var addedSongs = 0
             logger.log(Level.INFO, "[SongScanner] Scanning folder $path")
@@ -42,30 +84,9 @@ class SongScanner : KoinComponent {
                 }
             }.forEach { file ->
                 // read file tag
-                try {
-                    val audioFile = AudioFileIO.read(file.toFile())
-                    val tags = audioFile.tag
-                    transaction {
-                        Songs.insert {
-                            it[Songs.title] = tags.getFirst(FieldKey.TITLE)
-                            it[Songs.album] = tags.getFirst(FieldKey.ALBUM)
-                            it[Songs.artist] = tags.getFirst(FieldKey.ARTIST)
-                            it[Songs.filePath] = file.toAbsolutePath().toString()
-                        }
-                    }
+                if (addFileToDB(file.toFile())) {
                     addedSongs++
-                } catch (ex: Exception) {
-                    when (ex) {
-                        is IOException, is CannotReadException -> {
-                            logger.log(Level.WARNING, "[SongScanner] IOException while reading $file")
-                        }
-                        is TagException, is InvalidAudioFrameException -> {
-                            logger.log(Level.WARNING, "[SongScanner] Invalid audio file detected on $file")
-                        }
-                        else -> {
-                            throw ex
-                        }
-                    }
+                    logger.log(Level.INFO, "[SongScanner] Added ${file.toAbsolutePath()} .")
                 }
             }
             logger.log(Level.INFO, "[SongScanner] Scanning folder done. $addedSongs songs added to DB.")
