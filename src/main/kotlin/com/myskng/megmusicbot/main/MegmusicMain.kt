@@ -1,5 +1,15 @@
 package com.myskng.megmusicbot.main
 
+import com.myskng.megmusicbot.bot.BotConnectionManager
+import com.myskng.megmusicbot.di.initializeKoinProduction
+import com.myskng.megmusicbot.scanner.SongScanner
+import com.myskng.megmusicbot.store.readJsonConfig
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.runBlocking
+import org.koin.standalone.KoinComponent
+import org.koin.standalone.get
 import picocli.CommandLine
 
 class MegmusicMain {
@@ -17,15 +27,33 @@ class MegmusicMain {
             if (isModeNotSet) {
                 throw Exception("Specify bot or scanner mode.")
             }
+            if (isBotMode && isScannerMode) {
+                throw Exception("Multiple modes can not be specified.")
+            }
         }
     }
 
-    companion object {
+    companion object : KoinComponent {
         @JvmStatic
-        fun main(args: Array<String>) {
+        fun main(args: Array<String>) = runBlocking(Dispatchers.Main) {
             val command = AppCommand()
             CommandLine(command).parse(*args)
             command.checkCommand()
+            val config = readJsonConfig(command.configPath)
+            initializeKoinProduction(config)
+            when {
+                command.isScannerMode -> {
+                    val songScanner = get<SongScanner>()
+                    songScanner.scanFilesAsync().await()
+                }
+                else -> {
+                    val botConnectionManager = get<BotConnectionManager>()
+                    botConnectionManager.initializeBotConnection()
+                    while (isActive) {
+                        delay(Long.MAX_VALUE)
+                    }
+                }
+            }
         }
     }
 }

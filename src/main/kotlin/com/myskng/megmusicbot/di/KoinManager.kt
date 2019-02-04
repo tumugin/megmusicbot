@@ -2,8 +2,10 @@ package com.myskng.megmusicbot.di
 
 import com.myskng.megmusicbot.bot.BotCommand
 import com.myskng.megmusicbot.bot.BotCommandProcessor
+import com.myskng.megmusicbot.bot.BotConnectionManager
 import com.myskng.megmusicbot.database.SongSearch
 import com.myskng.megmusicbot.encoder.FFMpegEncoder
+import com.myskng.megmusicbot.scanner.SongScanner
 import com.myskng.megmusicbot.store.BotConfig
 import com.myskng.megmusicbot.store.BotStateStore
 import com.myskng.megmusicbot.text.DefaultLangStrings
@@ -29,6 +31,12 @@ fun initializeKoinProduction(config: BotConfig) {
         }
         single {
             SongSearch()
+        }
+        single {
+            SongScanner()
+        }
+        single {
+            BotConnectionManager()
         }
         single {
             config

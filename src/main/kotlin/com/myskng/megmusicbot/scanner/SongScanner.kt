@@ -31,9 +31,9 @@ class SongScanner : KoinComponent, CoroutineScope {
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Default + job
 
-    val logger by inject<Logger>()
-    val config by inject<BotConfig>()
-    val musicFileExtension = arrayOf(".mp3", ".m4a", ".ogg", ".wma", ".flac")
+    private val logger by inject<Logger>()
+    private val config by inject<BotConfig>()
+    private val musicFileExtension = arrayOf(".mp3", ".m4a", ".ogg", ".wma", ".flac")
 
     private fun addFileToDB(file: File): Boolean {
         try {
@@ -68,7 +68,7 @@ class SongScanner : KoinComponent, CoroutineScope {
         return false
     }
 
-    fun scanFiles() = async {
+    fun scanFilesAsync() = async {
         config.musicPaths.forEach { path ->
             var addedSongs = 0
             logger.log(Level.INFO, "[SongScanner] Scanning folder $path")

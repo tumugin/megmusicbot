@@ -57,7 +57,7 @@ class SongScannerTest : AbstractDefaultTester(), KoinComponent {
     @Test
     fun canReadTag() = runBlocking {
         val songScanner = SongScanner()
-        songScanner.scanFiles().await()
+        songScanner.scanFilesAsync().await()
         val list = transaction {
             Songs.selectAll().toList()
         }
