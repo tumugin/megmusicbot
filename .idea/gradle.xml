@@ -22,6 +22,7 @@
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/Exposed" />
             <option value="$PROJECT_DIR$/Exposed/spring-transaction" />
+            <option value="$PROJECT_DIR$/buildSrc" />
           </set>
         </option>
         <option name="useQualifiedModuleNames" value="true" />
