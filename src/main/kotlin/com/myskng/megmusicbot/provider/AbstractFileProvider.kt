@@ -4,6 +4,7 @@ import com.myskng.megmusicbot.encoder.IEncoderProcess
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import org.koin.standalone.KoinComponent
+import org.koin.standalone.get
 import org.koin.standalone.inject
 import sx.blah.discord.handle.audio.IAudioManager
 import sx.blah.discord.util.audio.providers.AudioInputStreamProvider
@@ -14,11 +15,11 @@ import javax.sound.sampled.AudioSystem
 abstract class AbstractFileProvider(private val iAudioManager: IAudioManager) : KoinComponent {
     private val encoderProcess by inject<IEncoderProcess>()
     private var audioInputStreamProvider: AudioInputStreamProvider? = null
-    private val job = Job()
+    private val job = Job(get())
 
     protected val logger by inject<Logger>()
     protected val originStreamQueue = Channel<ByteArray>(Int.MAX_VALUE)
-    protected val coroutineContext = Dispatchers.Default + job
+    protected val coroutineContext = Dispatchers.IO + job
 
     var onError: ((exception: Exception) -> Unit)? = null
 
@@ -76,20 +77,22 @@ abstract class AbstractFileProvider(private val iAudioManager: IAudioManager) : 
         }
     }
 
-    suspend fun startStream() {
-        withContext(Dispatchers.Default) {
-            logger.log(Level.INFO, "[Provider] Provider starting...")
-            fetchOriginStream().start()
-            inputDataToEncoder().start()
-            getDataFromEncoder().start()
-            // Wait until playing ends.
-            while (true) {
-                delay(500)
-                if (audioInputStreamProvider?.isReady?.not() == true || job.isCancelled) {
-                    break
-                }
+    suspend fun startStream() = withContext(Dispatchers.Default) {
+        logger.log(Level.INFO, "[Provider] Provider starting...")
+        fetchOriginStream().start()
+        inputDataToEncoder().start()
+        getDataFromEncoder().start()
+        // Wait until playing ends.
+        while (true) {
+            delay(500)
+            if (audioInputStreamProvider?.isReady?.not() == true || job.isCancelled) {
+                break
             }
-            logger.log(Level.INFO, "[Provider] Song play end. Provider disposing...")
         }
+        logger.log(Level.INFO, "[Provider] Song play end. Provider disposing...")
+    }
+
+    fun stopStream() {
+        job.cancel()
     }
 }

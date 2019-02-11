@@ -4,10 +4,12 @@ import com.myskng.megmusicbot.encoder.IEncoderProcess
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
+import kotlinx.coroutines.SupervisorJob
 import okhttp3.OkHttpClient
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.TestInstance
+import org.koin.dsl.module.Module
 import org.koin.dsl.module.module
 import org.koin.standalone.StandAloneContext
 import sx.blah.discord.handle.audio.IAudioProvider
@@ -19,8 +21,10 @@ import java.util.logging.Logger
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class AbstractDefaultTester {
+    protected val additionalKoinModules = mutableListOf<Module>()
+
     @BeforeAll
-    fun setupKoin() {
+    open fun setupKoin() {
         val modules = module {
             factory {
                 val pipedOutputStream = PipedOutputStream()
@@ -50,8 +54,11 @@ abstract class AbstractDefaultTester {
             single {
                 OkHttpClient()
             }
+            single {
+                SupervisorJob()
+            }
         }
-        StandAloneContext.startKoin(listOf(modules))
+        StandAloneContext.startKoin(listOf(modules).plus(additionalKoinModules))
     }
 
     @AfterAll
