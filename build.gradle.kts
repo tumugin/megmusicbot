@@ -21,6 +21,10 @@ java {
     sourceCompatibility = JavaVersion.VERSION_1_8
 }
 
+kapt {
+    useBuildCache = true
+}
+
 tasks.withType(Wrapper::class) {
     gradleVersion = "5.2"
 }
