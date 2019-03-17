@@ -47,6 +47,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:${Deps.kotlinVersion}")
     implementation("org.jetbrains.kotlin:kotlin-reflect:${Deps.kotlinVersion}")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.1.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.1.1")
     // Koin
     implementation("org.koin:koin-core:${Deps.koinVersion}")
     implementation("org.koin:koin-core-ext:${Deps.koinVersion}")
