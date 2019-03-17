@@ -8,7 +8,7 @@ plugins {
     id("jarmonica") version Deps.harmonicaVersion apply false
     id("org.jetbrains.kotlin.jvm") version Deps.kotlinVersion
     id("org.jetbrains.kotlin.kapt") version Deps.kotlinVersion
-    id("com.github.ben-manes.versions") version "0.20.0"
+    id("com.github.ben-manes.versions") version "0.21.0"
 }
 
 // workaround
@@ -53,10 +53,10 @@ dependencies {
     testImplementation("org.koin:koin-test:${Deps.koinVersion}")
     implementation("org.koin:koin-java:${Deps.koinVersion}")
     // Other libs
-    implementation("com.discord4j:Discord4J:2.10.1")
-    implementation("com.squareup.okhttp3:okhttp:3.12.1")
-    implementation("com.squareup.okio:okio:2.2.1")
-    implementation("info.picocli:picocli:3.9.2")
+    implementation("com.discord4j:Discord4J:3.0.0")
+    implementation("com.squareup.okhttp3:okhttp:3.14.0")
+    implementation("com.squareup.okio:okio:2.2.2")
+    implementation("info.picocli:picocli:3.9.5")
     // DB
     // don"t use it until bug fixes
     implementation("org.jetbrains.exposed:exposed:0.11.3-SNAPSHOT")
@@ -65,9 +65,9 @@ dependencies {
     // JSON
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.9.+")
     // Music Tag
-    implementation("net.jthink:jaudiotagger:2.2.5")
+    implementation("net.jthink:jaudiotagger:2.2.6-PATHRIK")
     // Test libs
-    testImplementation("org.mockito:mockito-core:2.23.4")
+    testImplementation("org.mockito:mockito-core:2.25.1")
     testImplementation("com.nhaarman.mockitokotlin2:mockito-kotlin:2.1.0")
     testImplementation("org.nanohttpd:nanohttpd:2.3.1")
 
