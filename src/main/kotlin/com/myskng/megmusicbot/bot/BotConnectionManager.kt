@@ -12,6 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactive.awaitFirst
+import kotlinx.coroutines.reactive.awaitSingle
 import org.koin.standalone.KoinComponent
 import org.koin.standalone.get
 import org.koin.standalone.inject
@@ -31,6 +32,7 @@ class BotConnectionManager : KoinComponent, CoroutineScope {
 
     suspend fun initializeBotConnection() {
         discordClient = DiscordClientBuilder(config.discordAPIKey).build()
+        discordClient.login().awaitSingle()
         discordClient.eventDispatcher.on(ReadyEvent::class.java).subscribe(onReady)
         discordClient.eventDispatcher.on(MessageCreateEvent::class.java).subscribe(onMessageReceive)
         discordClient.eventDispatcher.on(VoiceStateUpdateEvent::class.java).subscribe(onBotOnlyOnVoiceChannelEvent)
