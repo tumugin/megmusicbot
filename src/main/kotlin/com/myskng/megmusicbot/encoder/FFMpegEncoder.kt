@@ -10,7 +10,10 @@ class FFMpegEncoder(private val executablePath: String) : IEncoderProcess {
         get() = process.outputStream
     override val stdOutputStream: InputStream
         get() = process.inputStream
-    private val processBuilder: ProcessBuilder = ProcessBuilder(executablePath, "-i pipe:0 -f wav pipe:1")
+    private val processBuilder: ProcessBuilder = ProcessBuilder(
+        executablePath,
+        "-i pipe:0 -sample_fmt s16 -ar 48000 -ac 2 -acodec libopus -map 0:a -f data pipe:1"
+    )
     private lateinit var process: Process
 
     override fun killProcess() {
