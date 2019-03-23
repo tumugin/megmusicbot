@@ -3,7 +3,6 @@ package com.myskng.megmusicbot.bot.music
 import kotlinx.coroutines.*
 import org.koin.standalone.KoinComponent
 import org.koin.standalone.inject
-import sx.blah.discord.handle.audio.IAudioManager
 import java.util.logging.Level
 import java.util.logging.Logger
 
@@ -18,7 +17,7 @@ class SongQueueManager : KoinComponent {
     private val logger by inject<Logger>()
     private var isPlaying = false
 
-    suspend fun playQueue(audioManager: IAudioManager) {
+    suspend fun playQueue(rawOpusStreamProvider: RawOpusStreamProvider) {
         when {
             job.isCancelled || job.isCompleted -> throw IllegalStateException("Do not reuse SongQueueManager")
             isPlaying -> throw IllegalStateException("Already playing queue. Do not rerun playQueue().")
@@ -31,7 +30,7 @@ class SongQueueManager : KoinComponent {
                         playingSong = songQueue.removeAt(0)
                         playingSong?.onError = { ex -> onError?.invoke(ex) }
                         onSongPlay?.invoke(playingSong!!)
-                        playingSong?.play(audioManager)
+                        playingSong?.play(rawOpusStreamProvider)
                     } else {
                         //On empty queue
                         val result = onQueueEmpty?.invoke()

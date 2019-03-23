@@ -1,7 +1,6 @@
 package com.myskng.megmusicbot.bot.music
 
 import com.myskng.megmusicbot.provider.HttpFileProvider
-import sx.blah.discord.handle.audio.IAudioManager
 
 data class HTTPFileSong(val fileUrl: String) : ISong {
     override var onError: (exception: Exception) -> Unit = {}
@@ -11,8 +10,8 @@ data class HTTPFileSong(val fileUrl: String) : ISong {
 
     private lateinit var httpFileProvider: HttpFileProvider
 
-    override suspend fun play(iAudioManager: IAudioManager) {
-        httpFileProvider = HttpFileProvider(iAudioManager, fileUrl)
+    override suspend fun play(rawOpusStreamProvider: RawOpusStreamProvider) {
+        httpFileProvider = HttpFileProvider(rawOpusStreamProvider, fileUrl)
         httpFileProvider.onError = onError
         httpFileProvider.startStream()
     }

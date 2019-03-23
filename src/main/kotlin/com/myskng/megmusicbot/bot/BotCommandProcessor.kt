@@ -2,6 +2,7 @@ package com.myskng.megmusicbot.bot
 
 import com.myskng.megmusicbot.bot.music.HTTPFileSong
 import com.myskng.megmusicbot.bot.music.LocalSong
+import com.myskng.megmusicbot.bot.music.RawOpusStreamProvider
 import com.myskng.megmusicbot.bot.music.SongQueueManager
 import com.myskng.megmusicbot.database.SearchQuery
 import com.myskng.megmusicbot.database.SongSearch
@@ -35,16 +36,16 @@ open class BotCommandProcessor : KoinComponent {
             it.voiceStates.filter { voiceState -> voiceState.userId == event.message.author.get().id }.hasElements()
         }.awaitFirstOrNull() as VoiceChannel?
         if (channel != null) {
+            val rawOpusStreamProvider = RawOpusStreamProvider()
             voiceConnection = channel.join {
-                // it.setProvider(somethingProvider)
-                // TODO: 仕様がかなり変わっており、AudioProviderを自前で実装する必要がある模様
+                it.setProvider(rawOpusStreamProvider)
             }.awaitSingle()
             store.songQueue = SongQueueManager()
             val randomSongPlayer = RandomSongPlayer()
             store.songQueue.onQueueEmpty = {
                 randomSongPlayer.onEmptyQueue()
             }
-            store.songQueue.playQueue(channel.guild.audioManager)
+            store.songQueue.playQueue(rawOpusStreamProvider)
         } else {
             event.message.channel.awaitFirst()
                 .createMessage("@${event.message.author.get().username} ボイスチャンネルに参加してください")

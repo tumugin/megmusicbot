@@ -1,7 +1,6 @@
 package com.myskng.megmusicbot.bot.music
 
 import com.myskng.megmusicbot.provider.LocalFileProvider
-import sx.blah.discord.handle.audio.IAudioManager
 
 data class LocalSong(
     override val title: String,
@@ -18,8 +17,8 @@ data class LocalSong(
         }
     }
 
-    override suspend fun play(iAudioManager: IAudioManager) {
-        localFileProvider = LocalFileProvider(iAudioManager, filePath)
+    override suspend fun play(rawOpusStreamProvider: RawOpusStreamProvider) {
+        localFileProvider = LocalFileProvider(rawOpusStreamProvider, filePath)
         localFileProvider.onError = onError
         localFileProvider.startStream()
     }

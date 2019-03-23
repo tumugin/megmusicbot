@@ -1,5 +1,6 @@
 package com.myskng.megmusicbot.provider
 
+import com.myskng.megmusicbot.bot.music.RawOpusStreamProvider
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.isActive
@@ -9,12 +10,11 @@ import okio.buffer
 import okio.source
 import org.koin.standalone.KoinComponent
 import org.koin.standalone.inject
-import sx.blah.discord.handle.audio.IAudioManager
 import java.io.IOException
 import java.util.logging.Level
 
-class HttpFileProvider(audioManager: IAudioManager, private val url: String) : KoinComponent,
-    AbstractFileProvider(audioManager) {
+class HttpFileProvider(rawOpusStreamProvider: RawOpusStreamProvider, private val url: String) : KoinComponent,
+    AbstractFileProvider(rawOpusStreamProvider) {
     companion object {
         const val httpBufferSize = 1024 * 256
     }
