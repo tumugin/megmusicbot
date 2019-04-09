@@ -68,6 +68,7 @@ dependencies {
     // Music Tag
     implementation("net.jthink:jaudiotagger:2.2.6-PATHRIK")
     // Test libs
+    testImplementation("io.mockk:mockk:1.9.3")
     testImplementation("org.mockito:mockito-core:2.25.1")
     testImplementation("com.nhaarman.mockitokotlin2:mockito-kotlin:2.1.0")
     testImplementation("org.nanohttpd:nanohttpd:2.3.1")
