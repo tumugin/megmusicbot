@@ -2,60 +2,75 @@ package com.myskng.megmusicbot.bot
 
 import com.myskng.megmusicbot.bot.music.HTTPFileSong
 import com.myskng.megmusicbot.bot.music.LocalSong
+import com.myskng.megmusicbot.bot.music.RawOpusStreamProvider
 import com.myskng.megmusicbot.bot.music.SongQueueManager
 import com.myskng.megmusicbot.database.SearchQuery
 import com.myskng.megmusicbot.database.SongSearch
 import com.myskng.megmusicbot.store.BotStateStore
 import com.myskng.megmusicbot.text.DefaultLangStrings
+import discord4j.core.`object`.entity.VoiceChannel
+import discord4j.core.event.domain.VoiceStateUpdateEvent
+import discord4j.core.event.domain.message.MessageCreateEvent
+import discord4j.voice.VoiceConnection
+import kotlinx.coroutines.reactive.awaitFirst
+import kotlinx.coroutines.reactive.awaitFirstOrNull
+import kotlinx.coroutines.reactive.awaitSingle
 import org.koin.standalone.KoinComponent
 import org.koin.standalone.inject
-import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent
-import sx.blah.discord.handle.impl.events.guild.voice.user.UserVoiceChannelLeaveEvent
+import reactor.core.publisher.toMono
 
 open class BotCommandProcessor : KoinComponent {
     private val store by inject<BotStateStore>()
     private val botStrings by inject<DefaultLangStrings>()
     private val songSearch by inject<SongSearch>()
+    private var voiceConnection: VoiceConnection? = null
 
-    open fun outputHelpText(event: MessageReceivedEvent) {
-        event.channel.sendMessage(botStrings.botHelpText)
+    open suspend fun outputHelpText(event: MessageCreateEvent) {
+        event.message.channel.awaitFirst().createMessage(botStrings.botHelpText)
     }
 
-    open suspend fun joinVoiceChannel(event: MessageReceivedEvent) {
-        val channel =
-            event.guild.voiceChannels.firstOrNull {
-                it.connectedUsers.any { user -> user.longID == event.author.longID }
-            }
+    open suspend fun joinVoiceChannel(event: MessageCreateEvent) {
+        voiceConnection?.disconnect()
+        val channel = event.guild.awaitSingle().channels.filterWhen {
+            if (it !is VoiceChannel) return@filterWhen false.toMono()
+            it.voiceStates.filter { voiceState -> voiceState.userId == event.message.author.get().id }.hasElements()
+        }.awaitFirstOrNull() as VoiceChannel?
         if (channel != null) {
-            channel.join()
+            val rawOpusStreamProvider = RawOpusStreamProvider()
+            voiceConnection = channel.join {
+                it.setProvider(rawOpusStreamProvider)
+            }.awaitSingle()
             store.songQueue = SongQueueManager()
             val randomSongPlayer = RandomSongPlayer()
             store.songQueue.onQueueEmpty = {
                 randomSongPlayer.onEmptyQueue()
             }
-            store.songQueue.playQueue(channel.guild.audioManager)
+            store.songQueue.playQueue(rawOpusStreamProvider)
         } else {
-            event.channel.sendMessage("@${event.message.author.name} ボイスチャンネルに参加してください")
+            event.message.channel.awaitFirst()
+                .createMessage("@${event.message.author.get().username} ボイスチャンネルに参加してください")
         }
     }
 
-    open fun leaveVoiceChannel(event: MessageReceivedEvent) {
+    open suspend fun leaveVoiceChannel(event: MessageCreateEvent) {
         store.songQueue.stop()
-        val channel =
-            event.guild.voiceChannels.firstOrNull { it.connectedUsers.any { user -> user.longID == event.author.longID } }
-        if (channel != null && channel.isConnected) {
-            channel.leave()
+        val channel = event.guild.awaitSingle().channels.filterWhen {
+            if (it !is VoiceChannel) return@filterWhen false.toMono()
+            it.voiceStates.filter { voiceState -> voiceState.userId == event.message.author.get().id }.hasElements()
+        }.awaitFirst()
+        if (voiceConnection != null) {
+            voiceConnection?.disconnect()
         } else {
-            event.channel.sendMessage("@${event.message.author.name} 参加していないチャンネルに対する操作はできません。")
+            event.message.channel.awaitFirst()
+                .createMessage("@${event.message.author.get().username} 参加していないチャンネルに対する操作はできません。")
         }
     }
 
-    open fun leaveVoiceChannel(event: UserVoiceChannelLeaveEvent) {
-        store.songQueue.stop()
-        event.voiceChannel.leave()
+    open suspend fun leaveVoiceChannel(event: VoiceStateUpdateEvent) {
+        voiceConnection?.disconnect()
     }
 
-    open fun searchSong(query: Array<SearchQuery>, event: MessageReceivedEvent) {
+    open suspend fun searchSong(query: Array<SearchQuery>, event: MessageCreateEvent) {
         val originalResultList = songSearch.searchSong(query)
         val resultList = originalResultList.take(5)
         store.currentSearchList = resultList
@@ -68,20 +83,20 @@ open class BotCommandProcessor : KoinComponent {
                     "${rowHeaderPlaceHolder}Artist: ${item.artist}"
             printText += rowText + "\n"
         }
-        event.channel.sendMessage("${originalResultList.count()}件見つかりました\n$printText")
+        event.message.channel.awaitSingle().createMessage("${originalResultList.count()}件見つかりました\n$printText")
     }
 
-    open fun playSong(playIndex: Int, event: MessageReceivedEvent) {
+    open suspend fun playSong(playIndex: Int, event: MessageCreateEvent) {
         if (store.currentSearchList.count() >= playIndex + 1) {
             val song = store.currentSearchList[playIndex]
             store.songQueue.songQueue.add(song)
-            event.channel.sendMessage("${song.title}をキューに追加しました。")
+            event.message.channel.awaitSingle().createMessage("${song.title}をキューに追加しました。")
         } else {
-            event.channel.sendMessage("不正な番号が指定されました。")
+            event.message.channel.awaitSingle().createMessage("不正な番号が指定されました。")
         }
     }
 
-    open fun printQueue(event: MessageReceivedEvent) {
+    open suspend fun printQueue(event: MessageCreateEvent) {
         if (store.songQueue.songQueue.isNotEmpty()) {
             var printStr = "現在キューには${store.songQueue.songQueue.count()}件の曲が追加されています。"
             store.songQueue.songQueue.take(10).map {
@@ -93,9 +108,9 @@ open class BotCommandProcessor : KoinComponent {
             }.forEach {
                 printStr += "\n" + it
             }
-            event.channel.sendMessage(printStr)
+            event.message.channel.awaitSingle().createMessage(printStr)
         } else {
-            event.channel.sendMessage("再生キューが空です。")
+            event.message.channel.awaitSingle().createMessage("再生キューが空です。")
         }
     }
 }

@@ -2,19 +2,21 @@ package com.myskng.megmusicbot.bot
 
 import com.myskng.megmusicbot.exception.CommandSyntaxException
 import com.myskng.megmusicbot.store.BotConfig
+import discord4j.core.DiscordClient
+import discord4j.core.DiscordClientBuilder
+import discord4j.core.event.domain.VoiceStateUpdateEvent
+import discord4j.core.event.domain.lifecycle.ReadyEvent
+import discord4j.core.event.domain.message.MessageCreateEvent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.reactive.awaitFirst
+import kotlinx.coroutines.reactive.awaitSingle
 import org.koin.standalone.KoinComponent
 import org.koin.standalone.get
 import org.koin.standalone.inject
-import sx.blah.discord.api.ClientBuilder
-import sx.blah.discord.api.IDiscordClient
-import sx.blah.discord.api.events.IListener
-import sx.blah.discord.handle.impl.events.ReadyEvent
-import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent
-import sx.blah.discord.handle.impl.events.guild.voice.user.UserVoiceChannelLeaveEvent
+import java.util.function.Consumer
 import java.util.logging.Level
 import java.util.logging.Logger
 import kotlin.coroutines.CoroutineContext
@@ -23,41 +25,48 @@ class BotConnectionManager : KoinComponent, CoroutineScope {
     private val logger by inject<Logger>()
     private val botCommands = mutableMapOf<String, BotCommand>()
     private val config by inject<BotConfig>()
-    private lateinit var discordClient: IDiscordClient
+    private lateinit var discordClient: DiscordClient
 
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Default + get<Job>()
 
-    fun initializeBotConnection() {
-        val clientBuilder = ClientBuilder()
-        clientBuilder.withToken(config.discordAPIKey)
-        discordClient = clientBuilder.login()
-        arrayOf(onReady, onMessageReceive, onBotOnlyOnVoiceChannelEvent).forEach {
-            discordClient.dispatcher.registerListener(it)
-        }
+    suspend fun initializeBotConnection() {
+        discordClient = DiscordClientBuilder(config.discordAPIKey).build()
+        discordClient.login().awaitSingle()
+        discordClient.eventDispatcher.on(ReadyEvent::class.java).subscribe(onReady)
+        discordClient.eventDispatcher.on(MessageCreateEvent::class.java).subscribe(onMessageReceive)
+        discordClient.eventDispatcher.on(VoiceStateUpdateEvent::class.java).subscribe(onBotOnlyOnVoiceChannelEvent)
     }
 
-    private val onReady = IListener<ReadyEvent> {
+
+    private val onReady = Consumer<ReadyEvent> {
         logger.log(Level.INFO, "[BotConnectionManager] Discord connected.")
     }
 
-    val onMessageReceive = IListener<MessageReceivedEvent> { event ->
+    val onMessageReceive = Consumer<MessageCreateEvent> { event ->
         launch {
-            val botCommand = botCommands.getOrPut(event.guild.stringID) { get() }
-            if (botCommand.isBotCommand(event.message.content)) {
+            val guild = event.guild.awaitFirst()
+            val botCommand = botCommands.getOrPut(guild.id.asString()) { get() }
+            if (botCommand.isBotCommand(event.message.content.orElse(""))) {
                 try {
-                    botCommand.onCommandRecive(event.message.content, event)
+                    botCommand.onCommandRecive(event.message.content.orElse(""), event)
                 } catch (ex: CommandSyntaxException) {
-                    event.channel.sendMessage(ex.message)
+                    event.message.channel.awaitFirst().createMessage(ex.message ?: "Unknown Error")
                 }
             }
         }
     }
 
-    private val onBotOnlyOnVoiceChannelEvent = IListener<UserVoiceChannelLeaveEvent> { event ->
-        if (event.voiceChannel.connectedUsers.count() == 1 && event.voiceChannel.isConnected) {
-            val botCommand = botCommands.getOrPut(event.guild.stringID) { get() }
-            botCommand.processor.leaveVoiceChannel(event)
+    private val onBotOnlyOnVoiceChannelEvent = Consumer<VoiceStateUpdateEvent> { event ->
+        launch {
+            val voiceChannel = event.current.channel.awaitFirst()
+            if (voiceChannel.voiceStates.count().awaitFirst() == 1L && voiceChannel.voiceStates.map {
+                    it.user.map { user -> user.isBot }
+                }.any { true }.awaitFirst()) {
+                val botCommand = botCommands.getOrPut(event.current.guildId.asString()) { get() }
+                // TODO: VoiceConnectionを使わないと切断できないらしい
+                botCommand.processor.leaveVoiceChannel(event)
+            }
         }
     }
 }

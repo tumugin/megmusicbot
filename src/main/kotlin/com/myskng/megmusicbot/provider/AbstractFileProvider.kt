@@ -1,20 +1,18 @@
 package com.myskng.megmusicbot.provider
 
+import com.myskng.megmusicbot.bot.music.RawOpusStreamProvider
 import com.myskng.megmusicbot.encoder.IEncoderProcess
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import org.koin.standalone.KoinComponent
 import org.koin.standalone.get
 import org.koin.standalone.inject
-import sx.blah.discord.handle.audio.IAudioManager
-import sx.blah.discord.util.audio.providers.AudioInputStreamProvider
 import java.util.logging.Level
 import java.util.logging.Logger
 import javax.sound.sampled.AudioSystem
 
-abstract class AbstractFileProvider(private val iAudioManager: IAudioManager) : KoinComponent {
+abstract class AbstractFileProvider(private val rawOpusStreamProvider: RawOpusStreamProvider) : KoinComponent {
     private val encoderProcess by inject<IEncoderProcess>()
-    private var audioInputStreamProvider: AudioInputStreamProvider? = null
     private val job = Job(get())
 
     protected val logger by inject<Logger>()
@@ -66,9 +64,7 @@ abstract class AbstractFileProvider(private val iAudioManager: IAudioManager) : 
     protected fun getDataFromEncoder() = GlobalScope.async(coroutineContext) {
         try {
             logger.log(Level.INFO, "[Encoder] AudioSystem prepare start.")
-            val audioInputStream = AudioSystem.getAudioInputStream(encoderProcess.stdOutputStream)
-            audioInputStreamProvider = AudioInputStreamProvider(audioInputStream)
-            iAudioManager.audioProvider = audioInputStreamProvider
+            rawOpusStreamProvider.encodedDataInputStream = encoderProcess.stdOutputStream
             logger.log(Level.INFO, "[Encoder] AudioSystem prepare OK.")
         } catch (ex: Exception) {
             logger.log(Level.SEVERE, "[Encoder] $ex")
@@ -85,7 +81,7 @@ abstract class AbstractFileProvider(private val iAudioManager: IAudioManager) : 
         // Wait until playing ends.
         while (true) {
             delay(500)
-            if (audioInputStreamProvider?.isReady?.not() == true || job.isCancelled) {
+            if (job.isCancelled) {
                 break
             }
         }

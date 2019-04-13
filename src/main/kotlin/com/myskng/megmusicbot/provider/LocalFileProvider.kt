@@ -1,17 +1,17 @@
 package com.myskng.megmusicbot.provider
 
+import com.myskng.megmusicbot.bot.music.RawOpusStreamProvider
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.isActive
 import okio.buffer
 import okio.source
 import org.koin.standalone.KoinComponent
-import sx.blah.discord.handle.audio.IAudioManager
 import java.io.File
 import java.util.logging.Level
 
-class LocalFileProvider(audioManager: IAudioManager, private val filePath: String) : KoinComponent,
-    AbstractFileProvider(audioManager) {
+class LocalFileProvider(rawOpusStreamProvider: RawOpusStreamProvider, private val filePath: String) : KoinComponent,
+    AbstractFileProvider(rawOpusStreamProvider) {
     companion object {
         const val fileReaderBufferSize = 1024 * 256
     }
