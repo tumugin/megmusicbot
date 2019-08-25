@@ -75,16 +75,7 @@ abstract class AbstractFileProvider(private val rawOpusStreamProvider: RawOpusSt
 
     suspend fun startStream() = withContext(Dispatchers.Default) {
         logger.log(Level.INFO, "[Provider] Provider starting...")
-        fetchOriginStream().start()
-        inputDataToEncoder().start()
-        getDataFromEncoder().start()
-        // Wait until playing ends.
-        while (true) {
-            delay(500)
-            if (job.isCancelled) {
-                break
-            }
-        }
+        awaitAll(fetchOriginStream(), inputDataToEncoder(), getDataFromEncoder())
         logger.log(Level.INFO, "[Provider] Song play end. Provider disposing...")
     }
 
