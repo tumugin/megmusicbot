@@ -15,8 +15,8 @@ import discord4j.voice.VoiceConnection
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactive.awaitSingle
-import org.koin.standalone.KoinComponent
-import org.koin.standalone.inject
+import org.koin.core.KoinComponent
+import org.koin.core.inject
 import reactor.core.publisher.toMono
 
 open class BotCommandProcessor : KoinComponent {

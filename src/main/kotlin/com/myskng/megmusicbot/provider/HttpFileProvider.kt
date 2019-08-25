@@ -8,8 +8,8 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okio.buffer
 import okio.source
-import org.koin.standalone.KoinComponent
-import org.koin.standalone.inject
+import org.koin.core.KoinComponent
+import org.koin.core.inject
 import java.io.IOException
 import java.util.logging.Level
 
@@ -27,10 +27,10 @@ class HttpFileProvider(rawOpusStreamProvider: RawOpusStreamProvider, private val
             val request = Request.Builder().url(url).build()
             val httpResponse = okHttpClient.newCall(request).execute()
             httpResponse.use {
-                if (httpResponse.isSuccessful.not()) {
-                    throw IOException("HTTP(S) connection fault with response code ${httpResponse.code()}.(URL=$url)")
+                if (it.isSuccessful.not()) {
+                    throw IOException("HTTP(S) connection fault with response code ${it.code}.(URL=$url)")
                 }
-                val stream = httpResponse.body()!!.byteStream()
+                val stream = it.body!!.byteStream()
                 val streamSource = stream.source()
                 val streamBuffer = streamSource.buffer()
                 while (streamBuffer.exhausted().not() && isActive) {

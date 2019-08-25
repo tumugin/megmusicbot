@@ -4,8 +4,8 @@ import com.myskng.megmusicbot.provider.LocalFileProvider
 import com.myskng.megmusicbot.test.base.AbstractDefaultTester
 import kotlinx.coroutines.*
 import org.junit.jupiter.api.Test
-import org.koin.standalone.KoinComponent
-import org.koin.standalone.get
+import org.koin.core.KoinComponent
+import org.koin.core.get
 import sx.blah.discord.handle.audio.impl.AudioManager
 import sx.blah.discord.util.audio.providers.AudioInputStreamProvider
 

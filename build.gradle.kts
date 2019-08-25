@@ -7,8 +7,7 @@ plugins {
     id("java")
     id("jarmonica") version Deps.harmonicaVersion apply false
     id("org.jetbrains.kotlin.jvm") version Deps.kotlinVersion
-    id("org.jetbrains.kotlin.kapt") version Deps.kotlinVersion
-    id("com.github.ben-manes.versions") version "0.21.0"
+    id("com.github.ben-manes.versions") version "0.22.0"
 }
 
 // workaround
@@ -19,14 +18,11 @@ version = "1.0-FAIRY_STARS"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
-}
-
-kapt {
-    useBuildCache = true
+    targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 tasks.withType(Wrapper::class) {
-    gradleVersion = "5.2"
+    gradleVersion = "5.6"
 }
 
 repositories {
@@ -46,21 +42,21 @@ dependencies {
     // Kotlin
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:${Deps.kotlinVersion}")
     implementation("org.jetbrains.kotlin:kotlin-reflect:${Deps.kotlinVersion}")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.1.1")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.1.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Deps.kotlinCoroutine}")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:${Deps.kotlinCoroutine}")
     // Koin
     implementation("org.koin:koin-core:${Deps.koinVersion}")
     implementation("org.koin:koin-core-ext:${Deps.koinVersion}")
     testImplementation("org.koin:koin-test:${Deps.koinVersion}")
     implementation("org.koin:koin-java:${Deps.koinVersion}")
     // Other libs
-    implementation("com.discord4j:Discord4J:3.0.0")
-    implementation("com.squareup.okhttp3:okhttp:3.14.0")
-    implementation("com.squareup.okio:okio:2.2.2")
-    implementation("info.picocli:picocli:3.9.5")
+    implementation("com.discord4j:Discord4J:3.0.8")
+    implementation("com.squareup.okhttp3", "okhttp", "4.1.0")
+    implementation("com.squareup.okio", "okio", "2.3.0")
+    implementation("info.picocli:picocli:4.0.2")
     // DB
     // don"t use it until bug fixes
-    implementation("org.jetbrains.exposed:exposed:0.11.3-SNAPSHOT")
+    implementation("org.jetbrains.exposed:exposed:0.17.1")
     implementation("com.github.KenjiOhtsuka:harmonica:${Deps.harmonicaVersion}")
     implementation("org.xerial:sqlite-jdbc:${Deps.sqliteVersion}")
     // JSON

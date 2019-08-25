@@ -6,7 +6,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.isActive
 import okio.buffer
 import okio.source
-import org.koin.standalone.KoinComponent
+import org.koin.core.KoinComponent
 import java.io.File
 import java.util.logging.Level
 

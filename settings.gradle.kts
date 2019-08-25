@@ -1,7 +1,5 @@
 rootProject.name = "com.myskng.megmusicbot"
 
-includeBuild("./Exposed")
-
 pluginManagement {
     repositories {
         gradlePluginPortal()

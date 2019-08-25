@@ -4,8 +4,8 @@ import com.myskng.megmusicbot.database.SearchQuery
 import com.myskng.megmusicbot.database.SongSearchType
 import com.myskng.megmusicbot.exception.CommandSyntaxException
 import discord4j.core.event.domain.message.MessageCreateEvent
-import org.koin.standalone.KoinComponent
-import org.koin.standalone.inject
+import org.koin.core.KoinComponent
+import org.koin.core.inject
 import picocli.CommandLine
 
 class BotCommand : KoinComponent {
