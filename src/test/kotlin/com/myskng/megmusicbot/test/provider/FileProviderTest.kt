@@ -17,10 +17,6 @@ import java.io.File
 import java.io.IOException
 
 class FileProviderTest : KoinComponent, AbstractDefaultTester() {
-    companion object {
-        val silentSoundArray = byteArrayOf(0xFC.toByte(), 0xFF.toByte(), 0xFE.toByte())
-    }
-
     @Test
     fun canReadLocalFile() {
         val testFilePath = "./test2.flac"
@@ -41,7 +37,7 @@ class FileProviderTest : KoinComponent, AbstractDefaultTester() {
         Assertions.assertTrue(audioManager.provide())
         val testArray = ByteArray(3)
         audioManager.buffer.get(testArray)
-        Assertions.assertFalse(silentSoundArray contentEquals testArray)
+        Assertions.assertFalse(ProviderTestUtil.silentSoundArray contentEquals testArray)
         provider.stopStream()
     }
 
@@ -64,7 +60,11 @@ class FileProviderTest : KoinComponent, AbstractDefaultTester() {
         // 大前提としてファイルが空っぽでない事が必須
         Assertions.assertTrue(fileByteArray.isNotEmpty())
         // 0xFC 0xFF 0xFE 以外の結果が返ってくればOK
-
+        Assertions.assertTrue(audioManager.provide())
+        val testArray = ByteArray(3)
+        audioManager.buffer.get(testArray)
+        Assertions.assertFalse(ProviderTestUtil.silentSoundArray contentEquals testArray)
+        provider.stopStream()
         server.stop()
     }
 

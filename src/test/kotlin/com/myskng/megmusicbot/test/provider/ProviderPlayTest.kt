@@ -20,9 +20,15 @@ class ProviderPlayTest : KoinComponent, AbstractDefaultTester() {
                 }
             }
         }
-        val discordAudioProvider = audioManager.audioProvider as AudioInputStreamProvider
-        while (discordAudioProvider.provide().isNotEmpty()) {
+        audioManager.provide()
+        while (audioManager.buffer.hasRemaining()) {
             // read all bytes from stream
+            val testArray = ByteArray(3)
+            audioManager.buffer.get(testArray)
+            if (ProviderTestUtil.silentSoundArray contentEquals testArray) {
+                break
+            }
+            audioManager.provide()
         }
         runBlocking {
             withTimeout(1000) {
