@@ -15,8 +15,8 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
-import org.koin.dsl.module.module
-import org.koin.standalone.KoinComponent
+import org.koin.core.KoinComponent
+import org.koin.dsl.module
 import java.io.File
 import java.sql.Connection
 import java.sql.DriverManager
@@ -58,9 +58,6 @@ class SongScannerTest : AbstractDefaultTester(), KoinComponent {
     fun canReadTag() = runBlocking {
         val songScanner = SongScanner()
         songScanner.scanFilesAsync().await()
-        val list = transaction {
-            Songs.selectAll().toList()
-        }
         val result = transaction {
             addLogger(StdOutSqlLogger)
             Songs.select {

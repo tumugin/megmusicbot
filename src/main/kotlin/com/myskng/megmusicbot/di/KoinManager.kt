@@ -11,8 +11,8 @@ import com.myskng.megmusicbot.store.BotStateStore
 import com.myskng.megmusicbot.text.DefaultLangStrings
 import kotlinx.coroutines.SupervisorJob
 import okhttp3.OkHttpClient
-import org.koin.dsl.module.module
-import org.koin.standalone.StandAloneContext.startKoin
+import org.koin.core.context.startKoin
+import org.koin.dsl.module
 import java.util.logging.Logger
 
 fun initializeKoinProduction(config: BotConfig) {
@@ -55,5 +55,7 @@ fun initializeKoinProduction(config: BotConfig) {
             SupervisorJob()
         }
     }
-    startKoin(listOf(module))
+    startKoin{
+        modules(module)
+    }
 }

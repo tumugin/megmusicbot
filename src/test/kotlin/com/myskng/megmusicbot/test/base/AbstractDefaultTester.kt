@@ -1,19 +1,18 @@
 package com.myskng.megmusicbot.test.base
 
 import com.myskng.megmusicbot.encoder.IEncoderProcess
-import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
+import io.mockk.every
+import io.mockk.mockk
 import kotlinx.coroutines.SupervisorJob
 import okhttp3.OkHttpClient
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.TestInstance
-import org.koin.dsl.module.Module
-import org.koin.dsl.module.module
-import org.koin.standalone.StandAloneContext
-import sx.blah.discord.handle.audio.IAudioProvider
-import sx.blah.discord.handle.audio.impl.AudioManager
+import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
+import org.koin.dsl.module
 import java.io.BufferedInputStream
 import java.io.PipedInputStream
 import java.io.PipedOutputStream
@@ -21,7 +20,7 @@ import java.util.logging.Logger
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class AbstractDefaultTester {
-    protected val additionalKoinModules = mutableListOf<Module>()
+    protected val additionalKoinModules = mutableListOf<org.koin.core.module.Module>()
 
     @BeforeAll
     open fun setupKoin() {
@@ -30,23 +29,17 @@ abstract class AbstractDefaultTester {
                 val pipedOutputStream = PipedOutputStream()
                 val pipedInputStream = PipedInputStream()
                 pipedInputStream.connect(pipedOutputStream)
-                mock<IEncoderProcess> {
-                    on { isProcessAlive } doReturn true
-                    on { stdInputStream } doReturn pipedOutputStream
-                    on { stdOutputStream } doReturn BufferedInputStream(pipedInputStream)
-                }
-            }
-            factory {
-                var audioProvider: IAudioProvider? = null
-                mock<AudioManager> {
-                    on { setAudioProvider(any()) }.then {
-                        audioProvider = it.arguments.first() as IAudioProvider
-                        Unit
-                    }
-                    on { getAudioProvider() }.thenAnswer {
-                        audioProvider
-                    }
-                }
+                val mockIEncoderProcess = mockk<IEncoderProcess>()
+                every {
+                    mockIEncoderProcess.isProcessAlive
+                } returns true
+                every {
+                    mockIEncoderProcess.stdInputStream
+                } returns pipedOutputStream
+                every {
+                    mockIEncoderProcess.stdOutputStream
+                } returns BufferedInputStream(pipedInputStream)
+                mockIEncoderProcess
             }
             factory {
                 Logger.getLogger(it.javaClass.packageName)
@@ -58,11 +51,13 @@ abstract class AbstractDefaultTester {
                 SupervisorJob()
             }
         }
-        StandAloneContext.startKoin(listOf(modules).plus(additionalKoinModules))
+        startKoin {
+            modules(listOf(modules).plus(additionalKoinModules))
+        }
     }
 
     @AfterAll
     fun cleanupKoin() {
-        StandAloneContext.stopKoin()
+        stopKoin()
     }
 }

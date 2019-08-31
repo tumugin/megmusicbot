@@ -14,9 +14,9 @@ import org.jaudiotagger.tag.TagException
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.koin.standalone.KoinComponent
-import org.koin.standalone.get
-import org.koin.standalone.inject
+import org.koin.core.KoinComponent
+import org.koin.core.get
+import org.koin.core.inject
 import java.io.File
 import java.io.IOException
 import java.nio.file.FileVisitOption

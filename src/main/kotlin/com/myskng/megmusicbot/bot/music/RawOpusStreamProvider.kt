@@ -1,8 +1,8 @@
 package com.myskng.megmusicbot.bot.music
 
 import discord4j.voice.AudioProvider
-import org.koin.standalone.KoinComponent
-import org.koin.standalone.inject
+import org.koin.core.KoinComponent
+import org.koin.core.inject
 import java.io.IOException
 import java.io.InputStream
 import java.nio.ByteBuffer

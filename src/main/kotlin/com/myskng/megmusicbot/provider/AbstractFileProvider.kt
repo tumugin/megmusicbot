@@ -4,9 +4,9 @@ import com.myskng.megmusicbot.bot.music.RawOpusStreamProvider
 import com.myskng.megmusicbot.encoder.IEncoderProcess
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
-import org.koin.standalone.KoinComponent
-import org.koin.standalone.get
-import org.koin.standalone.inject
+import org.koin.core.KoinComponent
+import org.koin.core.get
+import org.koin.core.inject
 import java.util.logging.Level
 import java.util.logging.Logger
 import javax.sound.sampled.AudioSystem
@@ -75,16 +75,7 @@ abstract class AbstractFileProvider(private val rawOpusStreamProvider: RawOpusSt
 
     suspend fun startStream() = withContext(Dispatchers.Default) {
         logger.log(Level.INFO, "[Provider] Provider starting...")
-        fetchOriginStream().start()
-        inputDataToEncoder().start()
-        getDataFromEncoder().start()
-        // Wait until playing ends.
-        while (true) {
-            delay(500)
-            if (job.isCancelled) {
-                break
-            }
-        }
+        awaitAll(fetchOriginStream(), inputDataToEncoder(), getDataFromEncoder())
         logger.log(Level.INFO, "[Provider] Song play end. Provider disposing...")
     }
 

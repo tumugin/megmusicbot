@@ -1,30 +1,34 @@
 package com.myskng.megmusicbot.test.provider
 
+import com.myskng.megmusicbot.bot.music.RawOpusStreamProvider
 import com.myskng.megmusicbot.provider.LocalFileProvider
 import com.myskng.megmusicbot.test.base.AbstractDefaultTester
 import kotlinx.coroutines.*
 import org.junit.jupiter.api.Test
-import org.koin.standalone.KoinComponent
-import org.koin.standalone.get
-import sx.blah.discord.handle.audio.impl.AudioManager
-import sx.blah.discord.util.audio.providers.AudioInputStreamProvider
+import org.koin.core.KoinComponent
 
 class ProviderPlayTest : KoinComponent, AbstractDefaultTester() {
     @Test
     fun canDetectPlayEnd() {
-        val audioManager = get<AudioManager>()
+        val audioManager = RawOpusStreamProvider()
         val provider = LocalFileProvider(audioManager, "./test2.flac")
         val startStream = GlobalScope.async { provider.startStream() }
         runBlocking {
             withTimeout(5000) {
-                while (audioManager.audioProvider == null && isActive) {
+                while (audioManager.encodedDataInputStream == null && isActive) {
                     delay(10)
                 }
             }
         }
-        val discordAudioProvider = audioManager.audioProvider as AudioInputStreamProvider
-        while (discordAudioProvider.provide().isNotEmpty()) {
+        audioManager.provide()
+        while (audioManager.buffer.hasRemaining()) {
             // read all bytes from stream
+            val testArray = ByteArray(3)
+            audioManager.buffer.get(testArray)
+            if (ProviderTestUtil.silentSoundArray contentEquals testArray) {
+                break
+            }
+            audioManager.provide()
         }
         runBlocking {
             withTimeout(1000) {
