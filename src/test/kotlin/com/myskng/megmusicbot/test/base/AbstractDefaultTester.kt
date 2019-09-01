@@ -28,7 +28,7 @@ abstract class AbstractDefaultTester {
                 val pipedOutputStream = PipedOutputStream()
                 val pipedInputStream = PipedInputStream()
                 pipedInputStream.connect(pipedOutputStream)
-                val mockIEncoderProcess = mockk<IEncoderProcess>()
+                val mockIEncoderProcess = mockk<IEncoderProcess>(relaxUnitFun = true)
                 every {
                     mockIEncoderProcess.isProcessAlive
                 } returns true

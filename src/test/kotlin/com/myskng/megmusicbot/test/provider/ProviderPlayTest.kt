@@ -4,36 +4,36 @@ import com.myskng.megmusicbot.bot.music.RawOpusStreamProvider
 import com.myskng.megmusicbot.provider.LocalFileProvider
 import com.myskng.megmusicbot.test.base.AbstractDefaultTester
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.count
 import org.junit.jupiter.api.Test
 import org.koin.core.KoinComponent
 
 class ProviderPlayTest : KoinComponent, AbstractDefaultTester() {
     @Test
-    fun canDetectPlayEnd() {
+    fun canDetectPlayEnd() = runBlocking {
         val audioManager = RawOpusStreamProvider()
-        val provider = LocalFileProvider(audioManager, "./test2.flac")
+        val provider = LocalFileProvider(audioManager, "./rawopus.blob")
+        provider.onError = ProviderTestUtil.rethrowError
         val startStream = GlobalScope.async { provider.startStream() }
-        runBlocking {
-            withTimeout(5000) {
-                while (audioManager.encodedDataInputStream == null && isActive) {
-                    delay(10)
-                }
+        withTimeout(5000) {
+            while (audioManager.encodedDataInputStream == null && !provider.isOriginStreamAlive && isActive) {
+                delay(10)
             }
         }
         audioManager.provide()
-        while (audioManager.buffer.hasRemaining()) {
-            // read all bytes from stream
-            val testArray = ByteArray(3)
-            audioManager.buffer.get(testArray)
-            if (ProviderTestUtil.silentSoundArray contentEquals testArray) {
-                break
+        val nullStream = async {
+            while (audioManager.buffer.hasRemaining() && isActive) {
+                // read all bytes from stream
+                val testArray = ByteArray(audioManager.buffer.remaining())
+                audioManager.buffer.get(testArray)
+                audioManager.buffer.clear()
+                audioManager.provide()
+                println("${provider.originStreamQueue.isEmpty}")
             }
-            audioManager.provide()
         }
-        runBlocking {
-            withTimeout(1000) {
-                startStream.await()
-            }
+        withTimeout(10000) {
+            startStream.await()
+            nullStream.cancel()
         }
     }
 }

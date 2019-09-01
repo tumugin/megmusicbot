@@ -23,6 +23,9 @@ class LocalFileProvider(rawOpusStreamProvider: RawOpusStreamProvider, private va
             val fileBuffer = fileSource.buffer()
             fileSource.use {
                 fileBuffer.use {
+                    if (!fileBuffer.exhausted()) {
+                        isOriginStreamAlive = true
+                    }
                     while (fileBuffer.exhausted().not() && isActive) {
                         if (fileBuffer.request(fileReaderBufferSize.toLong())) {
                             originStreamQueue.send(fileBuffer.readByteArray(fileReaderBufferSize.toLong()))

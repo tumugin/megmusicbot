@@ -16,8 +16,11 @@ abstract class AbstractFileProvider(private val rawOpusStreamProvider: RawOpusSt
     private val job = Job(get())
 
     protected val logger by inject<Logger>()
-    protected val originStreamQueue = Channel<ByteArray>(Int.MAX_VALUE)
+    val originStreamQueue = Channel<ByteArray>(Channel.UNLIMITED)
     protected val coroutineContext = Dispatchers.IO + job
+
+    // データ取得元のストリームが有効か示すフラグ(1byteでも受け取れたらtrueにしなければならない)
+    var isOriginStreamAlive = false
 
     var onError: ((exception: Exception) -> Unit)? = null
 
