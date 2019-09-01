@@ -12,23 +12,21 @@ import okio.source
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.koin.core.KoinComponent
-import org.koin.core.get
 import java.io.File
 import java.io.IOException
 
 class FileProviderTest : KoinComponent, AbstractDefaultTester() {
     @Test
-    fun canReadLocalFile() {
+    fun canReadLocalFile() = runBlocking {
         val testFilePath = "./test2.flac"
         val fileByteArray = File(testFilePath).source().buffer().readByteArray()
         val audioManager = RawOpusStreamProvider()
         val provider = LocalFileProvider(audioManager, testFilePath)
+        provider.onError = ProviderTestUtil.rethrowError
         GlobalScope.async { provider.startStream() }
-        runBlocking {
-            withTimeout(5000) {
-                while (audioManager.encodedDataInputStream == null && isActive) {
-                    delay(10)
-                }
+        withTimeout(5000) {
+            while (audioManager.encodedDataInputStream == null && isActive) {
+                delay(10)
             }
         }
         // 大前提としてファイルが空っぽでない事が必須
@@ -80,7 +78,7 @@ class FileProviderTest : KoinComponent, AbstractDefaultTester() {
         runBlocking {
             withTimeout(5000) {
                 provider.startStream()
-                while (errorDetected.not()) {
+                while (errorDetected.not() && isActive) {
                     delay(10)
                 }
             }
