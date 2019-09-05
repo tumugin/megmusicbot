@@ -33,6 +33,9 @@ class HttpFileProvider(rawOpusStreamProvider: RawOpusStreamProvider, private val
                 val stream = it.body!!.byteStream()
                 val streamSource = stream.source()
                 val streamBuffer = streamSource.buffer()
+                if (!streamBuffer.exhausted()) {
+                    isOriginStreamAlive = true
+                }
                 while (streamBuffer.exhausted().not() && isActive) {
                     if (streamBuffer.request(httpBufferSize.toLong())) {
                         originStreamQueue.send(streamBuffer.readByteArray(httpBufferSize.toLong()))

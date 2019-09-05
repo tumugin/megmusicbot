@@ -16,8 +16,11 @@ abstract class AbstractFileProvider(private val rawOpusStreamProvider: RawOpusSt
     private val job = Job(get())
 
     protected val logger by inject<Logger>()
-    protected val originStreamQueue = Channel<ByteArray>(Int.MAX_VALUE)
+    val originStreamQueue = Channel<ByteArray>(Channel.UNLIMITED)
     protected val coroutineContext = Dispatchers.IO + job
+
+    // データ取得元のストリームが有効か示すフラグ(1byteでも受け取れたらtrueにしなければならない)
+    var isOriginStreamAlive = false
 
     var onError: ((exception: Exception) -> Unit)? = null
 
@@ -39,7 +42,7 @@ abstract class AbstractFileProvider(private val rawOpusStreamProvider: RawOpusSt
 
     protected abstract fun fetchOriginStream(): Deferred<Unit>
 
-    protected fun inputDataToEncoder() = GlobalScope.async(coroutineContext) {
+    protected fun inputDataToEncoder() = GlobalScope.async(newSingleThreadContext("inputDataToEncoder") + job) {
         try {
             encoderProcess.startProcess()
             val stream = encoderProcess.stdInputStream
@@ -76,6 +79,9 @@ abstract class AbstractFileProvider(private val rawOpusStreamProvider: RawOpusSt
     suspend fun startStream() = withContext(Dispatchers.Default) {
         logger.log(Level.INFO, "[Provider] Provider starting...")
         awaitAll(fetchOriginStream(), inputDataToEncoder(), getDataFromEncoder())
+        while (isActive && rawOpusStreamProvider.encodedDataInputStream?.available() ?: 0 > 0) {
+            delay(10)
+        }
         logger.log(Level.INFO, "[Provider] Song play end. Provider disposing...")
     }
 

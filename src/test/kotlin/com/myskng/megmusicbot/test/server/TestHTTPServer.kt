@@ -17,6 +17,14 @@ class TestHTTPServer(port: Int = 8888) : NanoHTTPD(port) {
                     "application/octet-stream", buffer.inputStream(), length
                 )
             }
+            "/rawopus.blob" -> {
+                val buffer = Buffer()
+                val length = File("./rawopus.blob").source().buffer().readAll(buffer)
+                return newFixedLengthResponse(
+                    NanoHTTPD.Response.Status.OK,
+                    "application/octet-stream", buffer.inputStream(), length
+                )
+            }
             else -> {
                 return super.serve(session)
             }

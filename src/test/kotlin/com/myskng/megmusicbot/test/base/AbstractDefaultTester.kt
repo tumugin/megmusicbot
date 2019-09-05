@@ -1,10 +1,9 @@
 package com.myskng.megmusicbot.test.base
 
 import com.myskng.megmusicbot.encoder.IEncoderProcess
-import com.nhaarman.mockitokotlin2.doReturn
-import com.nhaarman.mockitokotlin2.mock
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import okhttp3.OkHttpClient
 import org.junit.jupiter.api.AfterAll
@@ -29,7 +28,8 @@ abstract class AbstractDefaultTester {
                 val pipedOutputStream = PipedOutputStream()
                 val pipedInputStream = PipedInputStream()
                 pipedInputStream.connect(pipedOutputStream)
-                val mockIEncoderProcess = mockk<IEncoderProcess>()
+                val bufferedInputStream = BufferedInputStream(pipedInputStream)
+                val mockIEncoderProcess = mockk<IEncoderProcess>(relaxUnitFun = true)
                 every {
                     mockIEncoderProcess.isProcessAlive
                 } returns true
@@ -38,7 +38,7 @@ abstract class AbstractDefaultTester {
                 } returns pipedOutputStream
                 every {
                     mockIEncoderProcess.stdOutputStream
-                } returns BufferedInputStream(pipedInputStream)
+                } returns bufferedInputStream
                 mockIEncoderProcess
             }
             factory {
@@ -48,7 +48,7 @@ abstract class AbstractDefaultTester {
                 OkHttpClient()
             }
             single {
-                SupervisorJob()
+                SupervisorJob() as Job
             }
         }
         startKoin {
