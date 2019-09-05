@@ -21,14 +21,9 @@ class ProviderPlayTest : KoinComponent, AbstractDefaultTester() {
             }
         }
         audioManager.provide()
-        val nullStream = async {
-            while (audioManager.buffer.hasRemaining() && isActive) {
-                // read all bytes from stream
-                val testArray = ByteArray(audioManager.buffer.remaining())
-                audioManager.buffer.get(testArray)
-                audioManager.buffer.clear()
-                audioManager.provide()
-                println("${provider.originStreamQueue.isEmpty}")
+        val nullStream = async(context = Dispatchers.IO) {
+            while (isActive) {
+                audioManager.encodedDataInputStream?.readAllBytes()
             }
         }
         withTimeout(10000) {

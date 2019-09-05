@@ -42,7 +42,7 @@ abstract class AbstractFileProvider(private val rawOpusStreamProvider: RawOpusSt
 
     protected abstract fun fetchOriginStream(): Deferred<Unit>
 
-    protected fun inputDataToEncoder() = GlobalScope.async(coroutineContext) {
+    protected fun inputDataToEncoder() = GlobalScope.async(newSingleThreadContext("inputDataToEncoder") + job) {
         try {
             encoderProcess.startProcess()
             val stream = encoderProcess.stdInputStream
@@ -79,6 +79,9 @@ abstract class AbstractFileProvider(private val rawOpusStreamProvider: RawOpusSt
     suspend fun startStream() = withContext(Dispatchers.Default) {
         logger.log(Level.INFO, "[Provider] Provider starting...")
         awaitAll(fetchOriginStream(), inputDataToEncoder(), getDataFromEncoder())
+        while (isActive && rawOpusStreamProvider.encodedDataInputStream?.available() ?: 0 > 0) {
+            delay(10)
+        }
         logger.log(Level.INFO, "[Provider] Song play end. Provider disposing...")
     }
 
