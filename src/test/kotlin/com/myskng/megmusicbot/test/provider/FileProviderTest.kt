@@ -31,11 +31,7 @@ class FileProviderTest : KoinComponent, AbstractDefaultTester() {
         }
         // 大前提としてファイルが空っぽでない事が必須
         Assertions.assertTrue(fileByteArray.isNotEmpty())
-        // 0xFC 0xFF 0xFE 以外の結果が返ってくればOK
         Assertions.assertTrue(audioManager.provide())
-        val testArray = ByteArray(audioManager.buffer.remaining())
-        audioManager.buffer.get(testArray)
-        Assertions.assertFalse(ProviderTestUtil.silentSoundArray contentEquals testArray)
         provider.stopStream()
     }
 
@@ -56,11 +52,7 @@ class FileProviderTest : KoinComponent, AbstractDefaultTester() {
         }
         // 大前提としてファイルが空っぽでない事が必須
         Assertions.assertTrue(fileByteArray.isNotEmpty())
-        // 0xFC 0xFF 0xFE 以外の結果が返ってくればOK
         Assertions.assertTrue(audioManager.provide())
-        val testArray = ByteArray(audioManager.buffer.remaining())
-        audioManager.buffer.get(testArray)
-        Assertions.assertFalse(ProviderTestUtil.silentSoundArray contentEquals testArray)
         provider.stopStream()
         server.stop()
     }
