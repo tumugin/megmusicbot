@@ -55,7 +55,7 @@ fun initializeKoinProduction(config: BotConfig) {
             SupervisorJob()
         }
     }
-    startKoin{
+    startKoin {
         modules(module)
     }
 }

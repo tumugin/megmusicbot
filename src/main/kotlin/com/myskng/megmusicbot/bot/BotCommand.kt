@@ -14,20 +14,28 @@ class BotCommand : KoinComponent {
     class DiscordCommandLine {
         @CommandLine.Option(names = ["/title"])
         var title: String? = null
+
         @CommandLine.Option(names = ["/artist"])
         var artist: String? = null
+
         @CommandLine.Option(names = ["/album"])
         var album: String? = null
+
         @CommandLine.Option(names = ["/help"])
         var isHelp = false
+
         @CommandLine.Option(names = ["/join"])
         var isJoin = false
+
         @CommandLine.Option(names = ["/leave"])
         var isLeave = false
+
         @CommandLine.Option(names = ["/search"])
         var isSearch = false
+
         @CommandLine.Option(names = ["/play"])
         var play: Int = -1
+
         @CommandLine.Option(names = ["/queue"])
         var isQueue = false
 

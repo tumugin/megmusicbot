@@ -18,10 +18,12 @@ class MegmusicMain {
     class AppCommand {
         @CommandLine.Option(names = ["bot"])
         var isBotMode: Boolean = false
+
         @CommandLine.Option(names = ["scanner"])
         var isScannerMode: Boolean = false
         val isModeNotSet
             get() = !(isBotMode || isScannerMode)
+
         @CommandLine.Option(names = ["--config"])
         var configPath = "./config.json"
 
