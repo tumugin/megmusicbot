@@ -31,7 +31,13 @@ class FileProviderTest : KoinComponent, AbstractDefaultTester() {
         }
         // 大前提としてファイルが空っぽでない事が必須
         Assertions.assertTrue(fileByteArray.isNotEmpty())
-        Assertions.assertTrue(audioManager.provide())
+        withTimeout(1000) {
+            while (isActive) {
+                if (audioManager.provide()) {
+                    break
+                }
+            }
+        }
         provider.stopStream()
     }
 
@@ -52,7 +58,13 @@ class FileProviderTest : KoinComponent, AbstractDefaultTester() {
         }
         // 大前提としてファイルが空っぽでない事が必須
         Assertions.assertTrue(fileByteArray.isNotEmpty())
-        Assertions.assertTrue(audioManager.provide())
+        withTimeout(1000) {
+            while (isActive) {
+                if (audioManager.provide()) {
+                    break
+                }
+            }
+        }
         provider.stopStream()
         server.stop()
     }
