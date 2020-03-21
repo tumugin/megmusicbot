@@ -16,13 +16,16 @@ import java.sql.DriverManager
 
 class MegmusicMain {
     class AppCommand {
+        @CommandLine.Option(names = ["login"])
+        var isLoginMode: Boolean = false
+
         @CommandLine.Option(names = ["bot"])
         var isBotMode: Boolean = false
 
         @CommandLine.Option(names = ["scanner"])
         var isScannerMode: Boolean = false
         val isModeNotSet
-            get() = !(isBotMode || isScannerMode)
+            get() = !(isBotMode || isScannerMode || isLoginMode)
 
         @CommandLine.Option(names = ["--config"])
         var configPath = "./config.json"
@@ -41,12 +44,16 @@ class MegmusicMain {
         @JvmStatic
         fun main(args: Array<String>) = runBlocking(Dispatchers.Main) {
             val command = AppCommand()
-            CommandLine(command).parse(*args)
+            CommandLine(command).parseArgs(*args)
             command.checkCommand()
             val config = readJsonConfig(command.configPath)
             initializeKoinProduction(config)
             Database.connect({ DriverManager.getConnection(config.dbConnectionString) })
             when {
+                command.isLoginMode -> {
+                    println("Please login with following url.")
+                    println("https://discordapp.com/api/oauth2/authorize?client_id=<CLIENT ID HERE>&permissions=37223488&scope=bot")
+                }
                 command.isScannerMode -> {
                     val songScanner = get<SongScanner>()
                     songScanner.scanFilesAsync().await()
