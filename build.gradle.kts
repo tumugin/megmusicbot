@@ -5,6 +5,7 @@ buildscript {
 
 plugins {
     id("java")
+    id("application")
     id("jarmonica") version Deps.harmonicaVersion apply false
     id("org.jetbrains.kotlin.jvm") version Deps.kotlinVersion
     id("com.github.ben-manes.versions") version "0.28.0"
@@ -13,6 +14,10 @@ plugins {
 // workaround
 // will cause "Could not find any convention object of type JavaPluginConvention"
 apply(mapOf("plugin" to "jarmonica"))
+
+application {
+    mainClassName = "com.myskng.megmusicbot.main.MegmusicMain"
+}
 
 version = "1.0-FAIRY_STARS"
 
