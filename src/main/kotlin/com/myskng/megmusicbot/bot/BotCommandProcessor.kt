@@ -81,9 +81,9 @@ open class BotCommandProcessor : KoinComponent {
         resultList.forEachIndexed { num, item ->
             val rowNumHeader = "[${num + 1}] "
             val rowHeaderPlaceHolder = rowNumHeader.replace(Regex("."), " ")
-            val rowText = "${rowNumHeader}Title: ${item.title}\n" +
-                    "${rowHeaderPlaceHolder}Album: ${item.album}\n" +
-                    "${rowHeaderPlaceHolder}Artist: ${item.artist}"
+            val rowText = "> ${rowNumHeader}Title: ${item.title}\n" +
+                    "> ${rowHeaderPlaceHolder}Album: ${item.album}\n" +
+                    "> ${rowHeaderPlaceHolder}Artist: ${item.artist}"
             printText += rowText + "\n"
         }
         event.message.channel
@@ -98,7 +98,7 @@ open class BotCommandProcessor : KoinComponent {
             store.songQueue.songQueue.add(song)
             event.message.channel
                 .awaitSingle()
-                .createMessage("${song.title}をキューに追加しました。")
+                .createMessage("**${song.title}**をキューに追加しました。")
                 .awaitSingle()
         } else {
             event.message.channel
