@@ -12,13 +12,13 @@ class BotCommand : KoinComponent {
     val processor by inject<BotCommandProcessor>()
 
     class DiscordCommandLine {
-        @CommandLine.Option(names = ["/title"])
+        @CommandLine.Option(names = ["title"])
         var title: String? = null
 
-        @CommandLine.Option(names = ["/artist"])
+        @CommandLine.Option(names = ["artist"])
         var artist: String? = null
 
-        @CommandLine.Option(names = ["/album"])
+        @CommandLine.Option(names = ["album"])
         var album: String? = null
 
         @CommandLine.Option(names = ["/help"])
@@ -38,9 +38,6 @@ class BotCommand : KoinComponent {
 
         @CommandLine.Option(names = ["/queue"])
         var isQueue = false
-
-        val isSearchMode
-            get() = isSearch || title != null || artist != null || album != null
     }
 
     fun splitCommandToArray(command: String): Array<String> {
@@ -64,7 +61,7 @@ class BotCommand : KoinComponent {
     suspend fun onCommandRecive(command: String, event: MessageCreateEvent) {
         val discordCommandLine = DiscordCommandLine()
         try {
-            CommandLine(discordCommandLine).parse(*splitCommandToArray(command))
+            CommandLine(discordCommandLine).parseArgs(*splitCommandToArray(command))
         } catch (ex: CommandLine.PicocliException) {
             throw CommandSyntaxException("コマンド解析中にエラーが発生しました: ${ex.message}")
         }
@@ -78,7 +75,7 @@ class BotCommand : KoinComponent {
             discordCommandLine.isLeave -> {
                 processor.leaveVoiceChannel(event)
             }
-            discordCommandLine.isSearchMode -> {
+            discordCommandLine.isSearch -> {
                 val queryList = mutableListOf<SearchQuery>()
                 if (discordCommandLine.album != null) {
                     queryList.add(SearchQuery(SongSearchType.Album, discordCommandLine.album!!))

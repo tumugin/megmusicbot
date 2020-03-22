@@ -16,7 +16,6 @@ import kotlinx.coroutines.reactive.awaitSingle
 import org.koin.core.KoinComponent
 import org.koin.core.get
 import org.koin.core.inject
-import java.util.function.Consumer
 import java.util.logging.Level
 import java.util.logging.Logger
 import kotlin.coroutines.CoroutineContext
@@ -31,38 +30,38 @@ class BotConnectionManager : KoinComponent, CoroutineScope {
         get() = Dispatchers.Default + get<Job>()
 
     suspend fun initializeBotConnection() {
-        discordClient = DiscordClientBuilder(config.discordAPIKey).build()
+        discordClient = DiscordClientBuilder(config.discordApiKey).build()
+        discordClient.eventDispatcher.on(ReadyEvent::class.java).subscribe(::onReady)
+        discordClient.eventDispatcher.on(MessageCreateEvent::class.java).subscribe(::onMessageReceive)
+        discordClient.eventDispatcher.on(VoiceStateUpdateEvent::class.java).subscribe(::onBotOnlyOnVoiceChannelEvent)
         discordClient.login().awaitSingle()
-        discordClient.eventDispatcher.on(ReadyEvent::class.java).subscribe(onReady)
-        discordClient.eventDispatcher.on(MessageCreateEvent::class.java).subscribe(onMessageReceive)
-        discordClient.eventDispatcher.on(VoiceStateUpdateEvent::class.java).subscribe(onBotOnlyOnVoiceChannelEvent)
     }
 
-
-    private val onReady = Consumer<ReadyEvent> {
+    private fun onReady(event: ReadyEvent) {
         logger.log(Level.INFO, "[BotConnectionManager] Discord connected.")
     }
 
-    val onMessageReceive = Consumer<MessageCreateEvent> { event ->
+
+    private fun onMessageReceive(event: MessageCreateEvent) {
         launch {
-            val guild = event.guild.awaitFirst()
+            val guild = event.guild.awaitSingle()
             val botCommand = botCommands.getOrPut(guild.id.asString()) { get() }
             if (botCommand.isBotCommand(event.message.content.orElse(""))) {
                 try {
                     botCommand.onCommandRecive(event.message.content.orElse(""), event)
                 } catch (ex: CommandSyntaxException) {
-                    event.message.channel.awaitFirst().createMessage(ex.message ?: "Unknown Error")
+                    event.message.channel.awaitSingle().createMessage(ex.message ?: "Unknown Error").awaitSingle()
                 }
             }
         }
     }
 
-    private val onBotOnlyOnVoiceChannelEvent = Consumer<VoiceStateUpdateEvent> { event ->
+    private fun onBotOnlyOnVoiceChannelEvent(event: VoiceStateUpdateEvent) {
         launch {
-            val voiceChannel = event.current.channel.awaitFirst()
+            val voiceChannel = event.current.channel.awaitSingle()
             if (voiceChannel.voiceStates.count().awaitFirst() == 1L && voiceChannel.voiceStates.map {
                     it.user.map { user -> user.isBot }
-                }.any { true }.awaitFirst()) {
+                }.any { true }.awaitSingle()) {
                 val botCommand = botCommands.getOrPut(event.current.guildId.asString()) { get() }
                 // TODO: VoiceConnectionを使わないと切断できないらしい
                 botCommand.processor.leaveVoiceChannel(event)

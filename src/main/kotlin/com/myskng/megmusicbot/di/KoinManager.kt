@@ -9,6 +9,7 @@ import com.myskng.megmusicbot.scanner.SongScanner
 import com.myskng.megmusicbot.store.BotConfig
 import com.myskng.megmusicbot.store.BotStateStore
 import com.myskng.megmusicbot.text.DefaultLangStrings
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import okhttp3.OkHttpClient
 import org.koin.core.context.startKoin
@@ -52,7 +53,7 @@ fun initializeKoinProduction(config: BotConfig) {
             BotCommandProcessor()
         }
         single {
-            SupervisorJob()
+            SupervisorJob() as Job
         }
     }
     startKoin {

@@ -18,15 +18,18 @@ import kotlinx.coroutines.reactive.awaitSingle
 import org.koin.core.KoinComponent
 import org.koin.core.inject
 import reactor.core.publisher.toMono
+import java.util.logging.Level
+import java.util.logging.Logger
 
 open class BotCommandProcessor : KoinComponent {
+    private val logger by inject<Logger>()
     private val store by inject<BotStateStore>()
     private val botStrings by inject<DefaultLangStrings>()
     private val songSearch by inject<SongSearch>()
     private var voiceConnection: VoiceConnection? = null
 
     open suspend fun outputHelpText(event: MessageCreateEvent) {
-        event.message.channel.awaitFirst().createMessage(botStrings.botHelpText)
+        event.message.channel.awaitFirst().createMessage(botStrings.botHelpText).awaitSingle()
     }
 
     open suspend fun joinVoiceChannel(event: MessageCreateEvent) {
@@ -47,22 +50,22 @@ open class BotCommandProcessor : KoinComponent {
             }
             store.songQueue.playQueue(rawOpusStreamProvider)
         } else {
-            event.message.channel.awaitFirst()
-                .createMessage("@${event.message.author.get().username} ボイスチャンネルに参加してください")
+            event.message.channel
+                .awaitSingle()
+                .createMessage("${event.message.author.get().mention} ボイスチャンネルに参加してください")
+                .awaitSingle()
         }
     }
 
     open suspend fun leaveVoiceChannel(event: MessageCreateEvent) {
         store.songQueue.stop()
-        val channel = event.guild.awaitSingle().channels.filterWhen {
-            if (it !is VoiceChannel) return@filterWhen false.toMono()
-            it.voiceStates.filter { voiceState -> voiceState.userId == event.message.author.get().id }.hasElements()
-        }.awaitFirst()
         if (voiceConnection != null) {
             voiceConnection?.disconnect()
         } else {
-            event.message.channel.awaitFirst()
-                .createMessage("@${event.message.author.get().username} 参加していないチャンネルに対する操作はできません。")
+            event.message.channel
+                .awaitSingle()
+                .createMessage("${event.message.author.get().mention} 参加していないチャンネルに対する操作はできません。")
+                .awaitSingle()
         }
     }
 
@@ -83,16 +86,25 @@ open class BotCommandProcessor : KoinComponent {
                     "${rowHeaderPlaceHolder}Artist: ${item.artist}"
             printText += rowText + "\n"
         }
-        event.message.channel.awaitSingle().createMessage("${originalResultList.count()}件見つかりました\n$printText")
+        event.message.channel
+            .awaitSingle()
+            .createMessage("${originalResultList.count()}件見つかりました\n$printText")
+            .awaitSingle()
     }
 
     open suspend fun playSong(playIndex: Int, event: MessageCreateEvent) {
         if (store.currentSearchList.count() >= playIndex + 1) {
             val song = store.currentSearchList[playIndex]
             store.songQueue.songQueue.add(song)
-            event.message.channel.awaitSingle().createMessage("${song.title}をキューに追加しました。")
+            event.message.channel
+                .awaitSingle()
+                .createMessage("${song.title}をキューに追加しました。")
+                .awaitSingle()
         } else {
-            event.message.channel.awaitSingle().createMessage("不正な番号が指定されました。")
+            event.message.channel
+                .awaitSingle()
+                .createMessage("不正な番号が指定されました。")
+                .awaitSingle()
         }
     }
 
@@ -108,9 +120,15 @@ open class BotCommandProcessor : KoinComponent {
             }.forEach {
                 printStr += "\n" + it
             }
-            event.message.channel.awaitSingle().createMessage(printStr)
+            event.message.channel
+                .awaitSingle()
+                .createMessage(printStr)
+                .awaitSingle()
         } else {
-            event.message.channel.awaitSingle().createMessage("再生キューが空です。")
+            event.message.channel
+                .awaitSingle()
+                .createMessage("再生キューが空です。")
+                .awaitSingle()
         }
     }
 }
