@@ -5,6 +5,7 @@ import com.myskng.megmusicbot.bot.BotCommandProcessor
 import com.myskng.megmusicbot.bot.BotConnectionManager
 import com.myskng.megmusicbot.database.SongSearch
 import com.myskng.megmusicbot.encoder.FFMpegEncoder
+import com.myskng.megmusicbot.encoder.IEncoderProcess
 import com.myskng.megmusicbot.scanner.SongScanner
 import com.myskng.megmusicbot.store.BotConfig
 import com.myskng.megmusicbot.store.BotStateStore
@@ -18,7 +19,7 @@ import java.util.logging.Logger
 
 fun initializeKoinProduction(config: BotConfig) {
     val module = module {
-        factory {
+        factory<IEncoderProcess> {
             FFMpegEncoder(config.ffmpegPath)
         }
         factory {
@@ -52,8 +53,8 @@ fun initializeKoinProduction(config: BotConfig) {
         factory {
             BotCommandProcessor()
         }
-        single {
-            SupervisorJob() as Job
+        single<Job> {
+            SupervisorJob()
         }
     }
     startKoin {

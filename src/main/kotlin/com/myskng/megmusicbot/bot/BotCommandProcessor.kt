@@ -33,7 +33,6 @@ open class BotCommandProcessor : KoinComponent {
     }
 
     open suspend fun joinVoiceChannel(event: MessageCreateEvent) {
-        voiceConnection?.disconnect()
         val channel = event.guild.awaitSingle().channels.filterWhen {
             if (it !is VoiceChannel) return@filterWhen false.toMono()
             it.voiceStates.filter { voiceState -> voiceState.userId == event.message.author.get().id }.hasElements()

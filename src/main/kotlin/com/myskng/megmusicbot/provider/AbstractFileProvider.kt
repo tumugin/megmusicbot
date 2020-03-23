@@ -7,6 +7,7 @@ import kotlinx.coroutines.channels.Channel
 import org.koin.core.KoinComponent
 import org.koin.core.get
 import org.koin.core.inject
+import java.io.BufferedInputStream
 import java.util.logging.Level
 import java.util.logging.Logger
 import javax.sound.sampled.AudioSystem
@@ -44,7 +45,6 @@ abstract class AbstractFileProvider(private val rawOpusStreamProvider: RawOpusSt
 
     protected fun inputDataToEncoder() = GlobalScope.async(newSingleThreadContext("inputDataToEncoder") + job) {
         try {
-            encoderProcess.startProcess()
             val stream = encoderProcess.stdInputStream
             stream.use {
                 logger.log(Level.INFO, "[Encoder] Encoder input start.")
@@ -67,7 +67,7 @@ abstract class AbstractFileProvider(private val rawOpusStreamProvider: RawOpusSt
     protected fun getDataFromEncoder() = GlobalScope.async(coroutineContext) {
         try {
             logger.log(Level.INFO, "[Encoder] AudioSystem prepare start.")
-            rawOpusStreamProvider.encodedDataInputStream = encoderProcess.stdOutputStream
+            rawOpusStreamProvider.encodedDataInputStream = BufferedInputStream(encoderProcess.stdOutputStream, 10485760)
             logger.log(Level.INFO, "[Encoder] AudioSystem prepare OK.")
         } catch (ex: Exception) {
             logger.log(Level.SEVERE, "[Encoder] $ex")
@@ -78,6 +78,7 @@ abstract class AbstractFileProvider(private val rawOpusStreamProvider: RawOpusSt
 
     suspend fun startStream() = withContext(Dispatchers.Default) {
         logger.log(Level.INFO, "[Provider] Provider starting...")
+        encoderProcess.startProcess()
         awaitAll(fetchOriginStream(), inputDataToEncoder(), getDataFromEncoder())
         while (isActive && rawOpusStreamProvider.encodedDataInputStream?.available() ?: 0 > 0) {
             delay(10)
