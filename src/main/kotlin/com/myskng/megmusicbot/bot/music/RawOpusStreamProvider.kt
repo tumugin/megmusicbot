@@ -4,11 +4,10 @@ import club.minnced.opus.util.OpusLibrary
 import com.sun.jna.ptr.PointerByReference
 import discord4j.voice.AudioProvider
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.runBlocking
 import org.koin.core.KoinComponent
 import org.koin.core.get
 import tomp2p.opuswrapper.Opus
+import java.io.InputStream
 import java.nio.ByteBuffer
 import java.nio.IntBuffer
 import java.nio.ShortBuffer
@@ -21,8 +20,7 @@ class RawOpusStreamProvider(sampleRate: Int = 48000, private val audioChannels: 
 
     // https://stackoverflow.com/questions/46786922/how-to-confirm-opus-encode-buffer-size
     private val opusFrameSize = 960
-
-    var encodedDataInputStream: AudioInputStream? = null
+    var baseInputStream: InputStream? = null
     private var encoderPointer: PointerByReference
 
     init {
@@ -41,19 +39,22 @@ class RawOpusStreamProvider(sampleRate: Int = 48000, private val audioChannels: 
         }
     }
 
-    override fun provide(): Boolean = runBlocking(job) {
+    override fun provide(): Boolean{
         try {
             // When stream not available, just return a silent sound array.
-            if (encodedDataInputStream == null) {
+            if (baseInputStream == null) {
                 buffer.put(byteArrayOf(0xFC.toByte(), 0xFF.toByte(), 0xFE.toByte()))
                 buffer.flip()
-                return@runBlocking true
+                return true
             }
             val pcmBuffer = mutableListOf<Byte>()
-            pcmBuffer.addAll(
-                encodedDataInputStream!!.readNBytes(opusFrameSize * encodedDataInputStream!!.format.frameSize)
-                    .toTypedArray()
-            )
+            while (pcmBuffer.size < opusFrameSize * 4) {
+                if (baseInputStream!!.available() >= 4) {
+                    pcmBuffer.addAll(
+                        baseInputStream!!.readNBytes(4).toTypedArray()
+                    )
+                }
+            }
 
             val combinedPcmBuffer = createShortPcmArray(pcmBuffer)
             val encodedBuffer = ByteBuffer.allocate(4096)
@@ -63,18 +64,18 @@ class RawOpusStreamProvider(sampleRate: Int = 48000, private val audioChannels: 
                     combinedPcmBuffer,
                     opusFrameSize,
                     encodedBuffer,
-                    encodedBuffer.limit()
+                    4096
                 )
             if (result > 0) {
                 val encoded: ByteArray = (0..result).map { 0.toByte() }.toByteArray()
                 encodedBuffer.get(encoded)
                 buffer.put(encoded)
                 buffer.flip()
-                return@runBlocking true
+                return true
             }
-            return@runBlocking false
+            return false
         } catch (ex: Exception) {
-            return@runBlocking false
+            return false
         }
     }
 

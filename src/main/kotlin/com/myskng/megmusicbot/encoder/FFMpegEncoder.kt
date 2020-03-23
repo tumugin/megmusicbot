@@ -12,7 +12,7 @@ class FFMpegEncoder(executablePath: String) : IEncoderProcess {
         get() = process.inputStream
     private val command = mutableListOf(executablePath).also {
         it.addAll(
-            "-i pipe:0 -ar 48000 -ac 2 -acodec pcm_s16le -map 0:a -f wav pipe:1".split(" ")
+            "-i pipe:0 -ar 48000 -ac 2 -acodec pcm_s16be -map 0:a -f s16be pipe:1".split(" ")
         )
     }
     private val processBuilder: ProcessBuilder = ProcessBuilder(command)
