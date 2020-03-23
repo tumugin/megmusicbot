@@ -7,12 +7,11 @@ import kotlinx.coroutines.Job
 import org.koin.core.KoinComponent
 import org.koin.core.get
 import tomp2p.opuswrapper.Opus
-import tomp2p.opuswrapper.Opus.OPUS_SET_COMPLEXITY_REQUEST
+import tomp2p.opuswrapper.Opus.*
 import java.io.InputStream
 import java.nio.ByteBuffer
 import java.nio.IntBuffer
 import java.nio.ShortBuffer
-import javax.sound.sampled.AudioInputStream
 
 class RawOpusStreamProvider(sampleRate: Int = 48000, private val audioChannels: Int = 2) :
     AudioProvider(ByteBuffer.allocate(1568)),
@@ -36,12 +35,14 @@ class RawOpusStreamProvider(sampleRate: Int = 48000, private val audioChannels: 
             errorBuffer
         )
         Opus.INSTANCE.opus_encoder_ctl(encoderPointer, OPUS_SET_COMPLEXITY_REQUEST, 10)
+        Opus.INSTANCE.opus_encoder_ctl(encoderPointer, OPUS_SET_BANDWIDTH_REQUEST, OPUS_BANDWIDTH_FULLBAND)
+        Opus.INSTANCE.opus_encoder_ctl(encoderPointer, OPUS_SET_BITRATE_REQUEST, OPUS_BITRATE_MAX)
         if (errorBuffer[0] != Opus.OPUS_OK) {
             throw Exception("Opus initialize error. code=${errorBuffer[0]}")
         }
     }
 
-    override fun provide(): Boolean{
+    override fun provide(): Boolean {
         try {
             // When stream not available, just return a silent sound array.
             if (baseInputStream == null) {
