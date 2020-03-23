@@ -7,6 +7,7 @@ import kotlinx.coroutines.Job
 import org.koin.core.KoinComponent
 import org.koin.core.get
 import tomp2p.opuswrapper.Opus
+import tomp2p.opuswrapper.Opus.OPUS_SET_COMPLEXITY_REQUEST
 import java.io.InputStream
 import java.nio.ByteBuffer
 import java.nio.IntBuffer
@@ -34,6 +35,7 @@ class RawOpusStreamProvider(sampleRate: Int = 48000, private val audioChannels: 
             Opus.OPUS_APPLICATION_AUDIO,
             errorBuffer
         )
+        Opus.INSTANCE.opus_encoder_ctl(encoderPointer, OPUS_SET_COMPLEXITY_REQUEST, 10)
         if (errorBuffer[0] != Opus.OPUS_OK) {
             throw Exception("Opus initialize error. code=${errorBuffer[0]}")
         }
@@ -57,14 +59,14 @@ class RawOpusStreamProvider(sampleRate: Int = 48000, private val audioChannels: 
             }
 
             val combinedPcmBuffer = createShortPcmArray(pcmBuffer)
-            val encodedBuffer = ByteBuffer.allocate(4096)
+            val encodedBuffer = ByteBuffer.allocate(1568)
             val result =
                 Opus.INSTANCE.opus_encode(
                     encoderPointer,
                     combinedPcmBuffer,
                     opusFrameSize,
                     encodedBuffer,
-                    4096
+                    encodedBuffer.capacity()
                 )
             if (result > 0) {
                 val encoded: ByteArray = (0..result).map { 0.toByte() }.toByteArray()
