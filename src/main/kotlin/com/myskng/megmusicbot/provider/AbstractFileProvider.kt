@@ -10,6 +10,8 @@ import org.koin.core.inject
 import java.io.BufferedInputStream
 import java.util.logging.Level
 import java.util.logging.Logger
+import javax.sound.sampled.AudioFormat
+import javax.sound.sampled.AudioInputStream
 import javax.sound.sampled.AudioSystem
 
 abstract class AbstractFileProvider(private val rawOpusStreamProvider: RawOpusStreamProvider) : KoinComponent {
@@ -67,7 +69,8 @@ abstract class AbstractFileProvider(private val rawOpusStreamProvider: RawOpusSt
     protected fun getDataFromEncoder() = GlobalScope.async(coroutineContext) {
         try {
             logger.log(Level.INFO, "[Encoder] AudioSystem prepare start.")
-            rawOpusStreamProvider.encodedDataInputStream = BufferedInputStream(encoderProcess.stdOutputStream, 10485760)
+            rawOpusStreamProvider.encodedDataInputStream =
+                AudioSystem.getAudioInputStream(BufferedInputStream(encoderProcess.stdOutputStream, 10485760))
             logger.log(Level.INFO, "[Encoder] AudioSystem prepare OK.")
         } catch (ex: Exception) {
             logger.log(Level.SEVERE, "[Encoder] $ex")

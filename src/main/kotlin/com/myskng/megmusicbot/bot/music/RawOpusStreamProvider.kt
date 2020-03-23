@@ -1,63 +1,92 @@
 package com.myskng.megmusicbot.bot.music
 
+import club.minnced.opus.util.OpusLibrary
+import com.sun.jna.ptr.PointerByReference
 import discord4j.voice.AudioProvider
-import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withTimeout
 import org.koin.core.KoinComponent
-import org.koin.core.inject
-import java.io.IOException
-import java.io.InputStream
+import org.koin.core.get
+import tomp2p.opuswrapper.Opus
 import java.nio.ByteBuffer
-import java.util.logging.Level
-import java.util.logging.Logger
+import java.nio.IntBuffer
+import java.nio.ShortBuffer
+import javax.sound.sampled.AudioInputStream
 
-class RawOpusStreamProvider : AudioProvider(ByteBuffer.allocate(1568)), KoinComponent {
-    var encodedDataInputStream: InputStream? = null
-    private val logger by inject<Logger>()
+class RawOpusStreamProvider(sampleRate: Int = 48000, private val audioChannels: Int = 2) :
+    AudioProvider(ByteBuffer.allocate(1568)),
+    KoinComponent {
+    private val job = Job(get())
 
-    override fun provide(): Boolean = runBlocking {
+    // https://stackoverflow.com/questions/46786922/how-to-confirm-opus-encode-buffer-size
+    private val opusFrameSize = 960
+
+    var encodedDataInputStream: AudioInputStream? = null
+    private var encoderPointer: PointerByReference
+
+    init {
+        if (!OpusLibrary.isInitialized()) {
+            OpusLibrary.loadFromJar()
+        }
+        val errorBuffer = IntBuffer.allocate(1)
+        encoderPointer = Opus.INSTANCE.opus_encoder_create(
+            sampleRate,
+            audioChannels,
+            Opus.OPUS_APPLICATION_AUDIO,
+            errorBuffer
+        )
+        if (errorBuffer[0] != Opus.OPUS_OK) {
+            throw Exception("Opus initialize error. code=${errorBuffer[0]}")
+        }
+    }
+
+    override fun provide(): Boolean = runBlocking(job) {
         try {
-            withTimeout(1000) {
-                // When stream not available, just return a silent sound array.
-                if (encodedDataInputStream == null) {
-                    buffer.put(byteArrayOf(0xFC.toByte(), 0xFF.toByte(), 0xFE.toByte()))
-                    buffer.flip()
-                    return@withTimeout true
-                }
-                val opusBuffer = mutableListOf<Byte>()
-                try {
-                    while (isActive) {
-                        val availableBytesCount = encodedDataInputStream?.available()
-                        // read()は無限にブロッキングするので危険。ちゃんと値が返ってくることが保証されてから呼ぶべし。
-                        if (availableBytesCount == 0) {
-                            continue
-                        }
-                        val readByte = encodedDataInputStream?.read()
-                        if (opusBuffer.size != 0 && readByte == 0xFC) {
-                            break
-                        }
-                        if (readByte == null || readByte == -1) {
-                            break
-                        }
-                        opusBuffer.add(readByte.toByte())
-                    }
-                } catch (ex: IOException) {
-                    logger.log(Level.WARNING, "[RawOpusStreamProvider] IO Error while reading byte from stream.")
-                }
-                if (opusBuffer.size != 0) {
-                    if (opusBuffer[0] != 0xFC.toByte()) {
-                        buffer.put(0xFC.toByte())
-                    }
-                    buffer.put(opusBuffer.toByteArray())
-                    buffer.flip()
-                    return@withTimeout true
-                }
-                return@withTimeout false
+            // When stream not available, just return a silent sound array.
+            if (encodedDataInputStream == null) {
+                buffer.put(byteArrayOf(0xFC.toByte(), 0xFF.toByte(), 0xFE.toByte()))
+                buffer.flip()
+                return@runBlocking true
             }
-        } catch (ex: TimeoutCancellationException) {
+            val pcmBuffer = mutableListOf<Byte>()
+            pcmBuffer.addAll(
+                encodedDataInputStream!!.readNBytes(opusFrameSize * encodedDataInputStream!!.format.frameSize)
+                    .toTypedArray()
+            )
+
+            val combinedPcmBuffer = createShortPcmArray(pcmBuffer)
+            val encodedBuffer = ByteBuffer.allocate(4096)
+            val result =
+                Opus.INSTANCE.opus_encode(
+                    encoderPointer,
+                    combinedPcmBuffer,
+                    opusFrameSize,
+                    encodedBuffer,
+                    encodedBuffer.limit()
+                )
+            if (result > 0) {
+                val encoded: ByteArray = (0..result).map { 0.toByte() }.toByteArray()
+                encodedBuffer.get(encoded)
+                buffer.put(encoded)
+                buffer.flip()
+                return@runBlocking true
+            }
+            return@runBlocking false
+        } catch (ex: Exception) {
             return@runBlocking false
         }
+    }
+
+    private fun createShortPcmArray(pcm: List<Byte>): ShortBuffer? {
+        val nonEncodedBuffer = ShortBuffer.allocate(pcm.size / 2)
+        for (i in pcm.indices step 2) {
+            val firstByte = 0x000000FF and pcm[i].toInt()
+            val secondByte = 0x000000FF and pcm[i + 1].toInt()
+            val combined = ((firstByte shl 8) or secondByte).toShort()
+            nonEncodedBuffer.put(combined)
+        }
+        nonEncodedBuffer.flip()
+        return nonEncodedBuffer
     }
 }

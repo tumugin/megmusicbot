@@ -67,6 +67,9 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.10.3")
     // Music Tag
     implementation("net.jthink:jaudiotagger:2.2.6-PATHRIK")
+    // Opus
+    implementation("net.java.dev.jna:jna-platform:5.5.0")
+    implementation("club.minnced:opus-java:1.0.4")
     // Test libs
     testImplementation("io.mockk:mockk:1.9.3")
     testImplementation("org.mockito:mockito-core:3.3.3")
