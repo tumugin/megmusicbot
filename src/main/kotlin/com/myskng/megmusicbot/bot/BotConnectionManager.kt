@@ -51,6 +51,8 @@ class BotConnectionManager : KoinComponent, CoroutineScope {
                     botCommand.onCommandRecive(event.message.content.orElse(""), event)
                 } catch (ex: CommandSyntaxException) {
                     event.message.channel.awaitSingle().createMessage(ex.message ?: "Unknown Error").awaitSingle()
+                } catch (ex: Exception) {
+                    logger.log(Level.SEVERE, "[ERROR] $ex")
                 }
             }
         }

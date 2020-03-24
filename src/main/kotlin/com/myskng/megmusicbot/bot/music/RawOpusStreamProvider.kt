@@ -14,7 +14,7 @@ import java.nio.IntBuffer
 import java.nio.ShortBuffer
 
 class RawOpusStreamProvider(sampleRate: Int = 48000, private val audioChannels: Int = 2) :
-    AudioProvider(ByteBuffer.allocate(1568)),
+    AudioProvider(),
     KoinComponent {
     private val job = Job(get())
 
