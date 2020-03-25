@@ -5,6 +5,7 @@ buildscript {
 
 plugins {
     id("java")
+    id("application")
     id("jarmonica") version Deps.harmonicaVersion apply false
     id("org.jetbrains.kotlin.jvm") version Deps.kotlinVersion
     id("com.github.ben-manes.versions") version "0.28.0"
@@ -13,6 +14,10 @@ plugins {
 // workaround
 // will cause "Could not find any convention object of type JavaPluginConvention"
 apply(mapOf("plugin" to "jarmonica"))
+
+application {
+    mainClassName = "com.myskng.megmusicbot.main.MegmusicMain"
+}
 
 version = "1.0-FAIRY_STARS"
 
@@ -49,7 +54,7 @@ dependencies {
     implementation("org.koin:koin-core-ext:${Deps.koinVersion}")
     testImplementation("org.koin:koin-test:${Deps.koinVersion}")
     // Other libs
-    implementation("com.discord4j:Discord4J:3.0.12")
+    implementation("com.discord4j:Discord4J:3.0.13")
     implementation("com.squareup.okhttp3", "okhttp", "4.4.1")
     implementation("com.squareup.okio", "okio", "2.4.3")
     implementation("info.picocli:picocli:4.2.0")
@@ -62,6 +67,9 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.10.3")
     // Music Tag
     implementation("net.jthink:jaudiotagger:2.2.6-PATHRIK")
+    // Opus
+    implementation("net.java.dev.jna:jna-platform:5.5.0")
+    implementation("club.minnced:opus-java:1.0.4")
     // Test libs
     testImplementation("io.mockk:mockk:1.9.3")
     testImplementation("org.mockito:mockito-core:3.3.3")

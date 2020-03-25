@@ -1,7 +1,7 @@
 package com.myskng.megmusicbot.store
 
 data class BotConfig(
-    val discordAPIKey: String,
+    val discordApiKey: String,
     val ffmpegPath: String,
     val dbConnectionString: String,
     val musicPaths: Array<String>
@@ -12,7 +12,7 @@ data class BotConfig(
 
         other as BotConfig
 
-        if (discordAPIKey != other.discordAPIKey) return false
+        if (discordApiKey != other.discordApiKey) return false
         if (ffmpegPath != other.ffmpegPath) return false
         if (dbConnectionString != other.dbConnectionString) return false
         if (!musicPaths.contentEquals(other.musicPaths)) return false
@@ -21,7 +21,7 @@ data class BotConfig(
     }
 
     override fun hashCode(): Int {
-        var result = discordAPIKey.hashCode()
+        var result = discordApiKey.hashCode()
         result = 31 * result + ffmpegPath.hashCode()
         result = 31 * result + dbConnectionString.hashCode()
         result = 31 * result + musicPaths.contentHashCode()
