@@ -3,7 +3,6 @@ package com.myskng.megmusicbot.bot
 import com.myskng.megmusicbot.exception.CommandSyntaxException
 import com.myskng.megmusicbot.store.BotConfig
 import discord4j.core.DiscordClient
-import discord4j.core.DiscordClientBuilder
 import discord4j.core.event.domain.VoiceStateUpdateEvent
 import discord4j.core.event.domain.lifecycle.ReadyEvent
 import discord4j.core.event.domain.message.MessageCreateEvent
@@ -30,11 +29,11 @@ class BotConnectionManager : KoinComponent, CoroutineScope {
         get() = Dispatchers.Default + get<Job>()
 
     suspend fun initializeBotConnection() {
-        discordClient = DiscordClientBuilder(config.discordApiKey).build()
-        discordClient.eventDispatcher.on(ReadyEvent::class.java).subscribe(::onReady)
-        discordClient.eventDispatcher.on(MessageCreateEvent::class.java).subscribe(::onMessageReceive)
-        discordClient.eventDispatcher.on(VoiceStateUpdateEvent::class.java).subscribe(::onBotOnlyOnVoiceChannelEvent)
-        discordClient.login().awaitSingle()
+        discordClient = DiscordClient.create(config.discordApiKey)
+        val eventDispatcher = discordClient.login().awaitSingle().eventDispatcher
+        eventDispatcher.on(ReadyEvent::class.java).subscribe(::onReady)
+        eventDispatcher.on(MessageCreateEvent::class.java).subscribe(::onMessageReceive)
+        eventDispatcher.on(VoiceStateUpdateEvent::class.java).subscribe(::onBotOnlyOnVoiceChannelEvent)
     }
 
     private fun onReady(event: ReadyEvent) {
@@ -46,9 +45,9 @@ class BotConnectionManager : KoinComponent, CoroutineScope {
         launch {
             val guild = event.guild.awaitSingle()
             val botCommand = botCommands.getOrPut(guild.id.asString()) { get() }
-            if (botCommand.isBotCommand(event.message.content.orElse(""))) {
+            if (botCommand.isBotCommand(event.message.content)) {
                 try {
-                    botCommand.onCommandRecive(event.message.content.orElse(""), event)
+                    botCommand.onCommandRecive(event.message.content, event)
                 } catch (ex: CommandSyntaxException) {
                     event.message.channel.awaitSingle().createMessage(ex.message ?: "Unknown Error").awaitSingle()
                 } catch (ex: Exception) {

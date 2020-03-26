@@ -8,7 +8,7 @@ import com.myskng.megmusicbot.database.SearchQuery
 import com.myskng.megmusicbot.database.SongSearch
 import com.myskng.megmusicbot.store.BotStateStore
 import com.myskng.megmusicbot.text.DefaultLangStrings
-import discord4j.core.`object`.entity.VoiceChannel
+import discord4j.core.`object`.entity.channel.VoiceChannel
 import discord4j.core.event.domain.VoiceStateUpdateEvent
 import discord4j.core.event.domain.message.MessageCreateEvent
 import discord4j.voice.VoiceConnection
@@ -17,12 +17,9 @@ import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactive.awaitSingle
 import org.koin.core.KoinComponent
 import org.koin.core.inject
-import reactor.core.publisher.toMono
-import java.util.logging.Level
-import java.util.logging.Logger
+import reactor.kotlin.core.publisher.toMono
 
 open class BotCommandProcessor : KoinComponent {
-    private val logger by inject<Logger>()
     private val store by inject<BotStateStore>()
     private val botStrings by inject<DefaultLangStrings>()
     private val songSearch by inject<SongSearch>()
