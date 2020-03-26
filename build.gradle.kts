@@ -49,12 +49,13 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect:${Deps.kotlinVersion}")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Deps.kotlinCoroutine}")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:${Deps.kotlinCoroutine}")
+    implementation("io.projectreactor.kotlin:reactor-kotlin-extensions:1.0.2.RELEASE")
     // Koin
     implementation("org.koin:koin-core:${Deps.koinVersion}")
     implementation("org.koin:koin-core-ext:${Deps.koinVersion}")
     testImplementation("org.koin:koin-test:${Deps.koinVersion}")
     // Other libs
-    implementation("com.discord4j:Discord4J:3.0.13")
+    implementation("com.discord4j:discord4j-core")
     implementation("com.squareup.okhttp3", "okhttp", "4.4.1")
     implementation("com.squareup.okio", "okio", "2.4.3")
     implementation("info.picocli:picocli:4.2.0")
