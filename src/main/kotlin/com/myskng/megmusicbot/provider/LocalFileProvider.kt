@@ -13,7 +13,7 @@ import java.util.logging.Level
 class LocalFileProvider(rawOpusStreamProvider: RawOpusStreamProvider, private val filePath: String) : KoinComponent,
     AbstractFileProvider(rawOpusStreamProvider) {
     companion object {
-        const val fileReaderBufferSize = 1024 * 256
+        const val fileReaderBufferSize = 1024
     }
 
     override fun fetchOriginStream() = GlobalScope.async(coroutineContext) {

@@ -10,8 +10,6 @@ import org.koin.core.inject
 import java.io.BufferedInputStream
 import java.util.logging.Level
 import java.util.logging.Logger
-import javax.sound.sampled.AudioFormat
-import javax.sound.sampled.AudioSystem
 
 abstract class AbstractFileProvider(private val rawOpusStreamProvider: RawOpusStreamProvider) : KoinComponent {
     private val encoderProcess by inject<IEncoderProcess>()
@@ -19,6 +17,7 @@ abstract class AbstractFileProvider(private val rawOpusStreamProvider: RawOpusSt
 
     protected val logger by inject<Logger>()
     val originStreamQueue = Channel<ByteArray>(Channel.UNLIMITED)
+    val encoderOutputStreamQueue = Channel<ByteArray>(Channel.UNLIMITED)
     protected val coroutineContext = Dispatchers.IO + job
 
     // データ取得元のストリームが有効か示すフラグ(1byteでも受け取れたらtrueにしなければならない)

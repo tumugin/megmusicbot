@@ -53,6 +53,7 @@ class SongQueueManager : KoinComponent {
 
     fun stop() {
         logger.log(Level.INFO, "[SongQueueManager] Cancel signal received.")
+        playingSong?.stop()
         job.cancel()
     }
 }

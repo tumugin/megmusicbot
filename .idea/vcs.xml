@@ -2,5 +2,8 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Discord4J" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Stores" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/discord-json" vcs="Git" />
   </component>
 </project>

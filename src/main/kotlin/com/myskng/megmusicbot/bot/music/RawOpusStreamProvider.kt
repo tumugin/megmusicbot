@@ -14,7 +14,7 @@ import java.nio.IntBuffer
 import java.nio.ShortBuffer
 
 class RawOpusStreamProvider(sampleRate: Int = 48000, private val audioChannels: Int = 2) :
-    AudioProvider(),
+    AudioProvider(ByteBuffer.allocate(1568)),
     KoinComponent {
     private val job = Job(get())
 
@@ -51,6 +51,7 @@ class RawOpusStreamProvider(sampleRate: Int = 48000, private val audioChannels: 
                 return true
             }
             val pcmBuffer = mutableListOf<Byte>()
+            // 16bit PCM 2chの1フレームは4byte
             while (pcmBuffer.size < opusFrameSize * 4) {
                 if (baseInputStream!!.available() >= 4) {
                     pcmBuffer.addAll(
@@ -60,7 +61,7 @@ class RawOpusStreamProvider(sampleRate: Int = 48000, private val audioChannels: 
             }
 
             val combinedPcmBuffer = createShortPcmArray(pcmBuffer)
-            val encodedBuffer = ByteBuffer.allocate(1568)
+            val encodedBuffer = ByteBuffer.allocate(512)
             val result =
                 Opus.INSTANCE.opus_encode(
                     encoderPointer,
@@ -70,7 +71,7 @@ class RawOpusStreamProvider(sampleRate: Int = 48000, private val audioChannels: 
                     encodedBuffer.capacity()
                 )
             if (result > 0) {
-                val encoded: ByteArray = (0..result).map { 0.toByte() }.toByteArray()
+                val encoded: ByteArray = (1..result).map { 0.toByte() }.toByteArray()
                 encodedBuffer.get(encoded)
                 buffer.put(encoded)
                 buffer.flip()
