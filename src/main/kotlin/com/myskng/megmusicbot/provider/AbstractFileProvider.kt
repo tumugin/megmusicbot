@@ -4,6 +4,8 @@ import com.myskng.megmusicbot.bot.music.RawOpusStreamProvider
 import com.myskng.megmusicbot.encoder.IEncoderProcess
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
+import okio.buffer
+import okio.source
 import org.koin.core.KoinComponent
 import org.koin.core.get
 import org.koin.core.inject
@@ -11,14 +13,13 @@ import java.io.BufferedInputStream
 import java.util.logging.Level
 import java.util.logging.Logger
 
-abstract class AbstractFileProvider(private val rawOpusStreamProvider: RawOpusStreamProvider) : KoinComponent {
+abstract class AbstractFileProvider(private val rawOpusStreamProvider: RawOpusStreamProvider) : KoinComponent,
+    CoroutineScope {
     private val encoderProcess by inject<IEncoderProcess>()
     private val job = Job(get())
-
+    override val coroutineContext = Dispatchers.IO + job
     protected val logger by inject<Logger>()
     val originStreamQueue = Channel<ByteArray>(Channel.UNLIMITED)
-    val encoderOutputStreamQueue = Channel<ByteArray>(Channel.UNLIMITED)
-    protected val coroutineContext = Dispatchers.IO + job
 
     // データ取得元のストリームが有効か示すフラグ(1byteでも受け取れたらtrueにしなければならない)
     var isOriginStreamAlive = false
@@ -43,7 +44,7 @@ abstract class AbstractFileProvider(private val rawOpusStreamProvider: RawOpusSt
 
     protected abstract fun fetchOriginStream(): Deferred<Unit>
 
-    protected fun inputDataToEncoder() = GlobalScope.async(newSingleThreadContext("inputDataToEncoder") + job) {
+    private fun inputDataToEncoder() = async(newSingleThreadContext("inputDataToEncoder")) {
         try {
             val stream = encoderProcess.stdInputStream
             stream.use {
@@ -64,12 +65,21 @@ abstract class AbstractFileProvider(private val rawOpusStreamProvider: RawOpusSt
         }
     }
 
-    protected fun getDataFromEncoder() = GlobalScope.async(newSingleThreadContext("getDataFromEncoder") + job) {
+    private fun getDataFromEncoder() = async(newSingleThreadContext("getDataFromEncoder")) {
         try {
-            logger.log(Level.INFO, "[Encoder] AudioSystem prepare start.")
-            val baseStream = BufferedInputStream(encoderProcess.stdOutputStream, 50485760)
-            rawOpusStreamProvider.baseInputStream = baseStream
-            logger.log(Level.INFO, "[Encoder] AudioSystem prepare OK.")
+            logger.log(Level.INFO, "[Encoder] Encoder output processor start.")
+            val encoderOutputStreamQueue = Channel<Byte>(Channel.UNLIMITED)
+            val outputStream = encoderProcess.stdOutputStream.source()
+            val outputStreamBuffered = outputStream.buffer()
+            rawOpusStreamProvider.decodedPCMBuffer = encoderOutputStreamQueue
+            outputStream.use {
+                outputStreamBuffered.use {
+                    while (outputStreamBuffered.exhausted().not() && isActive) {
+                        encoderOutputStreamQueue.send(outputStreamBuffered.readByte())
+                    }
+                }
+            }
+            logger.log(Level.INFO, "[Encoder] Encoder output processor end.")
         } catch (ex: Exception) {
             logger.log(Level.SEVERE, "[Encoder] $ex")
             cleanupOnError()
@@ -77,12 +87,12 @@ abstract class AbstractFileProvider(private val rawOpusStreamProvider: RawOpusSt
         }
     }
 
-    suspend fun startStream() = withContext(newSingleThreadContext("startStream") + job) {
+    suspend fun startStream() = withContext(newSingleThreadContext("startStream")) {
         logger.log(Level.INFO, "[Provider] Provider starting...")
         encoderProcess.startProcess()
         awaitAll(fetchOriginStream(), inputDataToEncoder(), getDataFromEncoder())
-        while (isActive && rawOpusStreamProvider.baseInputStream?.available() ?: 0 > 0) {
-            delay(10)
+        while (isActive && rawOpusStreamProvider.decodedPCMBuffer?.isEmpty!!.not()) {
+            delay(20)
         }
         logger.log(Level.INFO, "[Provider] Song play end. Provider disposing...")
     }

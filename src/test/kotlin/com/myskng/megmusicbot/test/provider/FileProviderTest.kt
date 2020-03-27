@@ -25,7 +25,7 @@ class FileProviderTest : KoinComponent, AbstractDefaultTester() {
         provider.onError = ProviderTestUtil.rethrowError
         GlobalScope.async { provider.startStream() }
         withTimeout(5000) {
-            while (audioManager.baseInputStream == null && !provider.isOriginStreamAlive && isActive) {
+            while (audioManager.decodedPCMBuffer == null && !provider.isOriginStreamAlive && isActive) {
                 delay(10)
             }
         }
@@ -52,7 +52,7 @@ class FileProviderTest : KoinComponent, AbstractDefaultTester() {
         provider.onError = ProviderTestUtil.rethrowError
         GlobalScope.async { provider.startStream() }
         withTimeout(5000) {
-            while (audioManager.baseInputStream == null && !provider.isOriginStreamAlive && isActive) {
+            while (audioManager.decodedPCMBuffer == null && !provider.isOriginStreamAlive && isActive) {
                 delay(10)
             }
         }

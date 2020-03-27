@@ -3,7 +3,8 @@ package com.myskng.megmusicbot.bot.music
 import club.minnced.opus.util.OpusLibrary
 import com.sun.jna.ptr.PointerByReference
 import discord4j.voice.AudioProvider
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
 import org.koin.core.KoinComponent
 import org.koin.core.get
 import tomp2p.opuswrapper.Opus
@@ -13,14 +14,15 @@ import java.nio.ByteBuffer
 import java.nio.IntBuffer
 import java.nio.ShortBuffer
 
-class RawOpusStreamProvider(sampleRate: Int = 48000, private val audioChannels: Int = 2) :
+class RawOpusStreamProvider(sampleRate: Int = 48000, audioChannels: Int = 2) :
     AudioProvider(ByteBuffer.allocate(1568)),
-    KoinComponent {
+    KoinComponent, CoroutineScope {
     private val job = Job(get())
+    override val coroutineContext = Dispatchers.IO + job
 
     // https://stackoverflow.com/questions/46786922/how-to-confirm-opus-encode-buffer-size
     private val opusFrameSize = 960
-    var baseInputStream: InputStream? = null
+    var decodedPCMBuffer: Channel<Byte>? = null
     private var encoderPointer: PointerByReference
 
     init {
@@ -42,44 +44,41 @@ class RawOpusStreamProvider(sampleRate: Int = 48000, private val audioChannels: 
         }
     }
 
-    override fun provide(): Boolean {
+    override fun provide(): Boolean = runBlocking {
         try {
-            // When stream not available, just return a silent sound array.
-            if (baseInputStream == null) {
-                buffer.put(byteArrayOf(0xFC.toByte(), 0xFF.toByte(), 0xFE.toByte()))
-                buffer.flip()
-                return true
-            }
-            val pcmBuffer = mutableListOf<Byte>()
-            // 16bit PCM 2chの1フレームは4byte
-            while (pcmBuffer.size < opusFrameSize * 4) {
-                if (baseInputStream!!.available() >= 4) {
-                    pcmBuffer.addAll(
-                        baseInputStream!!.readNBytes(4).toTypedArray()
-                    )
+            return@runBlocking withTimeout(20) {
+                // When stream not available, just return a silent sound array.
+                if (decodedPCMBuffer == null) {
+                    buffer.put(byteArrayOf(0xFC.toByte(), 0xFF.toByte(), 0xFE.toByte()))
+                    buffer.flip()
+                    return@withTimeout true
                 }
+                val pcmBuffer = mutableListOf<Byte>()
+                // 16bit PCM 2chの1フレームは4byte
+                while (pcmBuffer.size < opusFrameSize * 4) {
+                    pcmBuffer.add(decodedPCMBuffer!!.receive())
+                }
+                val combinedPcmBuffer = createShortPcmArray(pcmBuffer)
+                val encodedBuffer = ByteBuffer.allocate(512)
+                val result =
+                    Opus.INSTANCE.opus_encode(
+                        encoderPointer,
+                        combinedPcmBuffer,
+                        opusFrameSize,
+                        encodedBuffer,
+                        encodedBuffer.capacity()
+                    )
+                if (result > 0) {
+                    val encoded: ByteArray = (1..result).map { 0.toByte() }.toByteArray()
+                    encodedBuffer.get(encoded)
+                    buffer.put(encoded)
+                    buffer.flip()
+                    return@withTimeout true
+                }
+                return@withTimeout false
             }
-
-            val combinedPcmBuffer = createShortPcmArray(pcmBuffer)
-            val encodedBuffer = ByteBuffer.allocate(512)
-            val result =
-                Opus.INSTANCE.opus_encode(
-                    encoderPointer,
-                    combinedPcmBuffer,
-                    opusFrameSize,
-                    encodedBuffer,
-                    encodedBuffer.capacity()
-                )
-            if (result > 0) {
-                val encoded: ByteArray = (1..result).map { 0.toByte() }.toByteArray()
-                encodedBuffer.get(encoded)
-                buffer.put(encoded)
-                buffer.flip()
-                return true
-            }
-            return false
         } catch (ex: Exception) {
-            return false
+            return@runBlocking false
         }
     }
 
