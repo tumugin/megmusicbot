@@ -7,16 +7,15 @@ import kotlinx.coroutines.channels.Channel
 import okio.buffer
 import okio.source
 import org.koin.core.KoinComponent
-import org.koin.core.get
 import org.koin.core.inject
-import java.io.BufferedInputStream
+import java.util.concurrent.TimeUnit
 import java.util.logging.Level
 import java.util.logging.Logger
 
 abstract class AbstractFileProvider(private val rawOpusStreamProvider: RawOpusStreamProvider) : KoinComponent,
     CoroutineScope {
     private val encoderProcess by inject<IEncoderProcess>()
-    private val job = Job(get())
+    private val job = Job()
     override val coroutineContext = Dispatchers.IO + job
     protected val logger by inject<Logger>()
     val originStreamQueue = Channel<ByteArray>(Channel.UNLIMITED)
@@ -69,14 +68,11 @@ abstract class AbstractFileProvider(private val rawOpusStreamProvider: RawOpusSt
         try {
             logger.log(Level.INFO, "[Encoder] Encoder output processor start.")
             val encoderOutputStreamQueue = Channel<Byte>(Channel.UNLIMITED)
-            val outputStream = encoderProcess.stdOutputStream.source()
-            val outputStreamBuffered = outputStream.buffer()
+            val outputStream = encoderProcess.stdOutputStream
             rawOpusStreamProvider.decodedPCMBuffer = encoderOutputStreamQueue
             outputStream.use {
-                outputStreamBuffered.use {
-                    while (outputStreamBuffered.exhausted().not() && isActive) {
-                        encoderOutputStreamQueue.send(outputStreamBuffered.readByte())
-                    }
+                while (isActive) {
+                    encoderOutputStreamQueue.send(outputStream.read().toByte())
                 }
             }
             logger.log(Level.INFO, "[Encoder] Encoder output processor end.")

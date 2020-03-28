@@ -38,6 +38,9 @@ class BotCommand : KoinComponent {
 
         @CommandLine.Option(names = ["/queue"])
         var isQueue = false
+
+        @CommandLine.Option(names = ["/skip"])
+        var isSkip = false
     }
 
     fun splitCommandToArray(command: String): Array<String> {
@@ -96,6 +99,9 @@ class BotCommand : KoinComponent {
             }
             discordCommandLine.isQueue -> {
                 processor.printQueue(event)
+            }
+            discordCommandLine.isSkip -> {
+                processor.skipSong()
             }
             else -> {
                 throw CommandSyntaxException("コマンドの記法が間違っています。")

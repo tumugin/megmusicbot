@@ -33,7 +33,7 @@ class RawOpusStreamProvider(sampleRate: Int = 48000, audioChannels: Int = 2) :
         encoderPointer = Opus.INSTANCE.opus_encoder_create(
             sampleRate,
             audioChannels,
-            Opus.OPUS_APPLICATION_AUDIO,
+            Opus.OPUS_APPLICATION_RESTRICTED_LOWDELAY,
             errorBuffer
         )
         Opus.INSTANCE.opus_encoder_ctl(encoderPointer, OPUS_SET_COMPLEXITY_REQUEST, 10)
@@ -46,7 +46,7 @@ class RawOpusStreamProvider(sampleRate: Int = 48000, audioChannels: Int = 2) :
 
     override fun provide(): Boolean = runBlocking {
         try {
-            return@runBlocking withTimeout(20) {
+            return@runBlocking withTimeout(30) {
                 // When stream not available, just return a silent sound array.
                 if (decodedPCMBuffer == null) {
                     buffer.put(byteArrayOf(0xFC.toByte(), 0xFF.toByte(), 0xFE.toByte()))

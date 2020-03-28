@@ -127,4 +127,8 @@ open class BotCommandProcessor : KoinComponent {
                 .awaitSingle()
         }
     }
+
+    open suspend fun skipSong() {
+        store.songQueue.skip()
+    }
 }
