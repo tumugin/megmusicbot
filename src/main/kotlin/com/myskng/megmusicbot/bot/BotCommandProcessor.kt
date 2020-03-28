@@ -84,7 +84,7 @@ open class BotCommandProcessor : KoinComponent {
         }
         event.message.channel
             .awaitSingle()
-            .createMessage("${originalResultList.count()}件見つかりました\n$printText")
+            .createMessage("**${originalResultList.count()}件**見つかりました\n$printText")
             .awaitSingle()
     }
 
@@ -130,5 +130,20 @@ open class BotCommandProcessor : KoinComponent {
 
     open suspend fun skipSong() {
         store.songQueue.skip()
+    }
+
+    open suspend fun isNowPlaying(event: MessageCreateEvent) {
+        if (store.songQueue.playingSong == null) {
+            event.message.channel
+                .awaitSingle()
+                .createMessage("現在何も再生していません。")
+                .awaitSingle()
+            return
+        }
+        val song = store.songQueue.playingSong!!
+        event.message.channel
+            .awaitSingle()
+            .createMessage("**現在再生中の曲**\nTitle: ${song.title}\nAlbum: ${song.album}\nArtist: ${song.artist}")
+            .awaitSingle()
     }
 }

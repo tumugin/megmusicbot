@@ -41,6 +41,9 @@ class BotCommand : KoinComponent {
 
         @CommandLine.Option(names = ["/skip"])
         var isSkip = false
+
+        @CommandLine.Option(names = ["/now", "/nowplaying"])
+        var isNowPlaying = false
     }
 
     fun splitCommandToArray(command: String): List<String> {
@@ -116,6 +119,9 @@ class BotCommand : KoinComponent {
             }
             discordCommandLine.isSkip -> {
                 processor.skipSong()
+            }
+            discordCommandLine.isNowPlaying -> {
+                processor.isNowPlaying(event)
             }
             else -> {
                 throw CommandSyntaxException("コマンドの記法が間違っています。")
