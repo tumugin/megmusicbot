@@ -9,7 +9,6 @@ import com.myskng.megmusicbot.database.SongSearch
 import com.myskng.megmusicbot.store.BotStateStore
 import com.myskng.megmusicbot.text.DefaultLangStrings
 import discord4j.core.`object`.entity.channel.VoiceChannel
-import discord4j.core.event.domain.VoiceStateUpdateEvent
 import discord4j.core.event.domain.message.MessageCreateEvent
 import discord4j.voice.VoiceConnection
 import kotlinx.coroutines.reactive.awaitFirst
@@ -65,7 +64,8 @@ open class BotCommandProcessor : KoinComponent {
         }
     }
 
-    open suspend fun leaveVoiceChannel(event: VoiceStateUpdateEvent) {
+    open suspend fun leaveVoiceChannel() {
+        store.songQueue.stop()
         voiceConnection?.disconnect()?.awaitFirstOrNull()
     }
 
@@ -84,7 +84,7 @@ open class BotCommandProcessor : KoinComponent {
         }
         event.message.channel
             .awaitSingle()
-            .createMessage("${originalResultList.count()}件見つかりました\n$printText")
+            .createMessage("**${originalResultList.count()}件**見つかりました\n$printText")
             .awaitSingle()
     }
 
@@ -130,5 +130,20 @@ open class BotCommandProcessor : KoinComponent {
 
     open suspend fun skipSong() {
         store.songQueue.skip()
+    }
+
+    open suspend fun isNowPlaying(event: MessageCreateEvent) {
+        if (store.songQueue.playingSong == null) {
+            event.message.channel
+                .awaitSingle()
+                .createMessage("現在何も再生していません。")
+                .awaitSingle()
+            return
+        }
+        val song = store.songQueue.playingSong!!
+        event.message.channel
+            .awaitSingle()
+            .createMessage("**現在再生中の曲**\nTitle: ${song.title}\nAlbum: ${song.album}\nArtist: ${song.artist}")
+            .awaitSingle()
     }
 }

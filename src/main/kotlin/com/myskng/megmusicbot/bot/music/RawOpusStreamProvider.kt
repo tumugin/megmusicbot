@@ -35,7 +35,7 @@ class RawOpusStreamProvider(sampleRate: Int = 48000, audioChannels: Int = 2) :
         encoderPointer = Opus.INSTANCE.opus_encoder_create(
             sampleRate,
             audioChannels,
-            Opus.OPUS_APPLICATION_RESTRICTED_LOWDELAY,
+            Opus.OPUS_APPLICATION_AUDIO,
             errorBuffer
         )
         Opus.INSTANCE.opus_encoder_ctl(encoderPointer, OPUS_SET_COMPLEXITY_REQUEST, 10)
