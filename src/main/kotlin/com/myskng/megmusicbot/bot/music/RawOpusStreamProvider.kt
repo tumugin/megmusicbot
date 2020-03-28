@@ -55,12 +55,9 @@ class RawOpusStreamProvider(sampleRate: Int = 48000, audioChannels: Int = 2) :
                     buffer.flip()
                     return@withTimeout true
                 }
-                val pcmBuffer = mutableListOf<Byte>()
                 // 16bit PCM 2chの1フレームは4byte
                 decodedPCMBuffer!!.request(readBytes.toLong())
-                while (pcmBuffer.size < readBytes) {
-                    pcmBuffer.add(decodedPCMBuffer!!.readByte())
-                }
+                val pcmBuffer = decodedPCMBuffer!!.readByteArray(readBytes.toLong())
                 eofDetected = false
                 val combinedPcmBuffer = createShortPcmArray(pcmBuffer)
                 val encodedBuffer = ByteBuffer.allocate(512)
@@ -73,7 +70,7 @@ class RawOpusStreamProvider(sampleRate: Int = 48000, audioChannels: Int = 2) :
                         encodedBuffer.capacity()
                     )
                 if (result > 0) {
-                    val encoded: ByteArray = (1..result).map { 0.toByte() }.toByteArray()
+                    val encoded = ByteArray(result) { 0.toByte() }
                     encodedBuffer.get(encoded)
                     buffer.put(encoded)
                     buffer.flip()
@@ -89,7 +86,7 @@ class RawOpusStreamProvider(sampleRate: Int = 48000, audioChannels: Int = 2) :
         }
     }
 
-    private fun createShortPcmArray(pcm: List<Byte>): ShortBuffer? {
+    private fun createShortPcmArray(pcm: ByteArray): ShortBuffer? {
         val nonEncodedBuffer = ShortBuffer.allocate(pcm.size / 2)
         for (i in pcm.indices step 2) {
             val firstByte = 0x000000FF and pcm[i].toInt()
