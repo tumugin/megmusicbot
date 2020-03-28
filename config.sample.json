@@ -1,0 +1,8 @@
+{
+  "discord_api_key": "<YOUR_API_KEY_HERE>",
+  "ffmpeg_path": "ffmpeg",
+  "db_connection_string": "jdbc:sqlite:megmusicbot.db",
+  "music_paths": [
+    "/home/megumi/Music/"
+  ]
+}
