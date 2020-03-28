@@ -2,7 +2,7 @@ package com.myskng.megmusicbot.test.scanner
 
 import com.myskng.megmusicbot.database.Songs
 import com.myskng.megmusicbot.scanner.SongScanner
-import com.myskng.megmusicbot.store.BotConfig
+import com.myskng.megmusicbot.config.BotConfig
 import com.myskng.megmusicbot.store.BotStateStore
 import com.myskng.megmusicbot.test.base.AbstractDefaultTester
 import kotlinx.coroutines.runBlocking

@@ -1,7 +1,7 @@
 package com.myskng.megmusicbot.scanner
 
+import com.myskng.megmusicbot.config.BotConfig
 import com.myskng.megmusicbot.database.Songs
-import com.myskng.megmusicbot.store.BotConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

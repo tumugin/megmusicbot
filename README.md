@@ -9,7 +9,7 @@ DBはデフォルトで同梱しているsqliteを使用するようになって
 `src/main/kotlin/db/config/Default.kt` を編集することでこれらの設定を変えることが出来ます。
 
 ### 2. コンフィグの設置
-`config.sample.json` を参考に `config.json` を同じ階層に作ってください。
+`sample.env` を参考に `.env` を同じ階層に作ってください。
 
 DBの接続設定はマイグレーションを実行した環境と同じにしてください。
 
