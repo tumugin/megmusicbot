@@ -55,12 +55,11 @@ dependencies {
     implementation("org.koin:koin-core-ext:${Deps.koinVersion}")
     testImplementation("org.koin:koin-test:${Deps.koinVersion}")
     // Other libs
-    implementation("com.discord4j:discord4j-core")
+    implementation("com.discord4j:discord4j-core") // バグが修正されるまで独自ビルドする
     implementation("com.squareup.okhttp3", "okhttp", "4.4.1")
     implementation("com.squareup.okio", "okio", "2.4.3")
     implementation("info.picocli:picocli:4.2.0")
     // DB
-    // don"t use it until bug fixes
     implementation("org.jetbrains.exposed:exposed:0.17.7")
     implementation("com.github.KenjiOhtsuka:harmonica:${Deps.harmonicaVersion}")
     implementation("org.xerial:sqlite-jdbc:${Deps.sqliteVersion}")
@@ -71,6 +70,8 @@ dependencies {
     // Opus
     implementation("net.java.dev.jna:jna-platform:5.5.0")
     implementation("club.minnced:opus-java:1.0.4")
+    // dotenv
+    implementation("io.github.cdimascio:java-dotenv:5.1.3")
     // Test libs
     testImplementation("io.mockk:mockk:1.9.3")
     testImplementation("org.mockito:mockito-core:3.3.3")

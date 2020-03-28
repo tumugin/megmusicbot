@@ -1,7 +1,7 @@
 package com.myskng.megmusicbot.bot
 
+import com.myskng.megmusicbot.config.BotConfig
 import com.myskng.megmusicbot.exception.CommandSyntaxException
-import com.myskng.megmusicbot.store.BotConfig
 import discord4j.core.DiscordClient
 import discord4j.core.event.domain.VoiceStateUpdateEvent
 import discord4j.core.event.domain.lifecycle.ReadyEvent

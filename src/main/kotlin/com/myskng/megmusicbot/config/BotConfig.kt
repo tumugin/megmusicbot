@@ -1,4 +1,4 @@
-package com.myskng.megmusicbot.store
+package com.myskng.megmusicbot.config
 
 data class BotConfig(
     val discordApiKey: String,

@@ -1,9 +1,9 @@
 package com.myskng.megmusicbot.main
 
 import com.myskng.megmusicbot.bot.BotConnectionManager
+import com.myskng.megmusicbot.config.readEnvConfig
 import com.myskng.megmusicbot.di.initializeKoinProduction
 import com.myskng.megmusicbot.scanner.SongScanner
-import com.myskng.megmusicbot.store.readJsonConfig
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.runBlocking
@@ -29,7 +29,7 @@ class MegmusicMain {
             get() = !(isBotMode || isScannerMode || isLoginMode)
 
         @CommandLine.Option(names = ["--config"])
-        var configPath = "./config.json"
+        var configName: String? = null
 
         fun checkCommand() {
             if (isModeNotSet) {
@@ -47,7 +47,11 @@ class MegmusicMain {
             val command = AppCommand()
             CommandLine(command).parseArgs(*args)
             command.checkCommand()
-            val config = readJsonConfig(command.configPath)
+            val config = if (command.configName !== null) {
+                readEnvConfig(command.configName!!)
+            } else {
+                readEnvConfig()
+            }
             initializeKoinProduction(config)
             Database.connect({ DriverManager.getConnection(config.dbConnectionString) })
             TransactionManager.manager.defaultIsolationLevel = Connection.TRANSACTION_SERIALIZABLE
