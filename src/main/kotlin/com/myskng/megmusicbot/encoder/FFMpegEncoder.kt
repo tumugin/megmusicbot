@@ -1,5 +1,6 @@
 package com.myskng.megmusicbot.encoder
 
+import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
 
@@ -23,7 +24,7 @@ class FFMpegEncoder(executablePath: String) : IEncoderProcess {
     }
 
     override fun startProcess() {
-        processBuilder.redirectErrorStream(false)
+        processBuilder.redirectError(File("/dev/null"))
         process = processBuilder.start()
     }
 }

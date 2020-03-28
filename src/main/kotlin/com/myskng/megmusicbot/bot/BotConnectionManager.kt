@@ -33,7 +33,7 @@ class BotConnectionManager : KoinComponent, CoroutineScope {
         val eventDispatcher = discordClient.login().awaitSingle().eventDispatcher
         eventDispatcher.on(ReadyEvent::class.java).subscribe(::onReady)
         eventDispatcher.on(MessageCreateEvent::class.java).subscribe(::onMessageReceive)
-        eventDispatcher.on(VoiceStateUpdateEvent::class.java).subscribe(::onBotOnlyOnVoiceChannelEvent)
+        // eventDispatcher.on(VoiceStateUpdateEvent::class.java).subscribe(::onBotOnlyOnVoiceChannelEvent)
     }
 
     private fun onReady(event: ReadyEvent) {

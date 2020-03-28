@@ -56,7 +56,7 @@ open class BotCommandProcessor : KoinComponent {
     open suspend fun leaveVoiceChannel(event: MessageCreateEvent) {
         store.songQueue.stop()
         if (voiceConnection != null) {
-            voiceConnection?.disconnect()
+            voiceConnection?.disconnect()?.awaitFirstOrNull()
         } else {
             event.message.channel
                 .awaitSingle()
@@ -66,7 +66,7 @@ open class BotCommandProcessor : KoinComponent {
     }
 
     open suspend fun leaveVoiceChannel(event: VoiceStateUpdateEvent) {
-        voiceConnection?.disconnect()
+        voiceConnection?.disconnect()?.awaitFirstOrNull()
     }
 
     open suspend fun searchSong(query: Array<SearchQuery>, event: MessageCreateEvent) {
@@ -126,5 +126,9 @@ open class BotCommandProcessor : KoinComponent {
                 .createMessage("再生キューが空です。")
                 .awaitSingle()
         }
+    }
+
+    open suspend fun skipSong() {
+        store.songQueue.skip()
     }
 }

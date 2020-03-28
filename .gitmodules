@@ -1,6 +1,6 @@
 [submodule "Discord4J"]
 	path = Discord4J
-	url = git@github.com:tumugin/Discord4J.git
+	url = https://github.com/Discord4J/Discord4J.git
 [submodule "discord-json"]
 	path = discord-json
 	url = https://github.com/Discord4J/discord-json.git

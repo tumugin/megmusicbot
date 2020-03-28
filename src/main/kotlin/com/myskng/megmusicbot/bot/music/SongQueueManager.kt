@@ -23,36 +23,40 @@ class SongQueueManager : KoinComponent {
             isPlaying -> throw IllegalStateException("Already playing queue. Do not rerun playQueue().")
         }
         isPlaying = true
-        try {
-            withContext(Dispatchers.Default + job) {
-                while (isActive) {
-                    if (songQueue.isNotEmpty()) {
-                        playingSong = songQueue.removeAt(0)
-                        playingSong?.onError = { ex -> onError?.invoke(ex) }
-                        onSongPlay?.invoke(playingSong!!)
+        withContext(Dispatchers.Default + job) {
+            while (isActive) {
+                if (songQueue.isNotEmpty()) {
+                    playingSong = songQueue.removeAt(0)
+                    playingSong?.onError = { ex -> onError?.invoke(ex) }
+                    onSongPlay?.invoke(playingSong!!)
+                    try {
                         playingSong?.play(rawOpusStreamProvider)
+                    } catch (_: CancellationException) {
+                    }
+                } else {
+                    //On empty queue
+                    val result = onQueueEmpty?.invoke()
+                    if (result != null) {
+                        songQueue.add(result)
+                    } else if (onQueueEmpty == null) {
+                        break
                     } else {
-                        //On empty queue
-                        val result = onQueueEmpty?.invoke()
-                        if (result != null) {
-                            songQueue.add(result)
-                        } else if (onQueueEmpty == null) {
-                            break
-                        } else {
-                            // retry in 1000msec.
-                            delay(1000)
-                        }
+                        // retry in 1000msec.
+                        delay(1000)
                     }
                 }
             }
-        } catch (_: CancellationException) {
-            // dismiss CancellationException
-            logger.log(Level.INFO, "[SongQueueManager] On Queue play cancel.")
         }
     }
 
     fun stop() {
         logger.log(Level.INFO, "[SongQueueManager] Cancel signal received.")
+        playingSong?.stop()
         job.cancel()
+    }
+
+    fun skip() {
+        logger.log(Level.INFO, "[SongQueueManager] Skip song.")
+        playingSong?.stop()
     }
 }
