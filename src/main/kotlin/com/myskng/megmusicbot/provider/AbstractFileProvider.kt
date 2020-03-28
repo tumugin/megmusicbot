@@ -8,7 +8,6 @@ import okio.buffer
 import okio.source
 import org.koin.core.KoinComponent
 import org.koin.core.inject
-import java.util.concurrent.TimeUnit
 import java.util.logging.Level
 import java.util.logging.Logger
 
@@ -64,17 +63,11 @@ abstract class AbstractFileProvider(private val rawOpusStreamProvider: RawOpusSt
         }
     }
 
-    private fun getDataFromEncoder() = async(newSingleThreadContext("getDataFromEncoder")) {
+    private fun getDataFromEncoder() = async {
         try {
             logger.log(Level.INFO, "[Encoder] Encoder output processor start.")
-            val encoderOutputStreamQueue = Channel<Byte>(Channel.UNLIMITED)
-            val outputStream = encoderProcess.stdOutputStream
-            rawOpusStreamProvider.decodedPCMBuffer = encoderOutputStreamQueue
-            outputStream.use {
-                while (isActive) {
-                    encoderOutputStreamQueue.send(outputStream.read().toByte())
-                }
-            }
+            val outputStream = encoderProcess.stdOutputStream.source().buffer()
+            rawOpusStreamProvider.decodedPCMBuffer = outputStream
             logger.log(Level.INFO, "[Encoder] Encoder output processor end.")
         } catch (ex: Exception) {
             logger.log(Level.SEVERE, "[Encoder] $ex")
@@ -83,11 +76,11 @@ abstract class AbstractFileProvider(private val rawOpusStreamProvider: RawOpusSt
         }
     }
 
-    suspend fun startStream() = withContext(newSingleThreadContext("startStream")) {
+    suspend fun startStream() = withContext(Dispatchers.Default) {
         logger.log(Level.INFO, "[Provider] Provider starting...")
         encoderProcess.startProcess()
         awaitAll(fetchOriginStream(), inputDataToEncoder(), getDataFromEncoder())
-        while (isActive && rawOpusStreamProvider.decodedPCMBuffer?.isEmpty!!.not()) {
+        while (isActive && rawOpusStreamProvider.decodedPCMBuffer?.buffer?.size != 0L) {
             delay(20)
         }
         logger.log(Level.INFO, "[Provider] Song play end. Provider disposing...")

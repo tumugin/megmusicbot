@@ -4,12 +4,11 @@ import club.minnced.opus.util.OpusLibrary
 import com.sun.jna.ptr.PointerByReference
 import discord4j.voice.AudioProvider
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.Channel
+import okio.BufferedSource
 import org.koin.core.KoinComponent
 import org.koin.core.get
 import tomp2p.opuswrapper.Opus
 import tomp2p.opuswrapper.Opus.*
-import java.io.InputStream
 import java.nio.ByteBuffer
 import java.nio.IntBuffer
 import java.nio.ShortBuffer
@@ -22,7 +21,7 @@ class RawOpusStreamProvider(sampleRate: Int = 48000, audioChannels: Int = 2) :
 
     // https://stackoverflow.com/questions/46786922/how-to-confirm-opus-encode-buffer-size
     private val opusFrameSize = 960
-    var decodedPCMBuffer: Channel<Byte>? = null
+    var decodedPCMBuffer: BufferedSource? = null
     private var encoderPointer: PointerByReference
 
     init {
@@ -56,7 +55,7 @@ class RawOpusStreamProvider(sampleRate: Int = 48000, audioChannels: Int = 2) :
                 val pcmBuffer = mutableListOf<Byte>()
                 // 16bit PCM 2chの1フレームは4byte
                 while (pcmBuffer.size < opusFrameSize * 4) {
-                    pcmBuffer.add(decodedPCMBuffer!!.receive())
+                    pcmBuffer.add(decodedPCMBuffer!!.readByte())
                 }
                 val combinedPcmBuffer = createShortPcmArray(pcmBuffer)
                 val encodedBuffer = ByteBuffer.allocate(512)

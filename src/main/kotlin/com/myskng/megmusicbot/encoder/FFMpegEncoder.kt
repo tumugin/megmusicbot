@@ -1,5 +1,6 @@
 package com.myskng.megmusicbot.encoder
 
+import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
 
@@ -12,7 +13,7 @@ class FFMpegEncoder(executablePath: String) : IEncoderProcess {
         get() = process.inputStream
     private val command = mutableListOf(executablePath).also {
         it.addAll(
-            "-i pipe:0 -filter:a \"volume=-30dB\" -ar 48000 -ac 2 -acodec pcm_s16be -map 0:a -f s16be pipe:1".split(" ")
+            "-i pipe:0 -ar 48000 -ac 2 -acodec pcm_s16be -map 0:a -f s16be pipe:1".split(" ")
         )
     }
     private val processBuilder: ProcessBuilder = ProcessBuilder(command)
@@ -23,7 +24,7 @@ class FFMpegEncoder(executablePath: String) : IEncoderProcess {
     }
 
     override fun startProcess() {
-        processBuilder.redirectErrorStream(false)
+        processBuilder.redirectError(File("/dev/null"))
         process = processBuilder.start()
     }
 }
