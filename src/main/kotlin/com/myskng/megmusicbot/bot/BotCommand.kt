@@ -43,7 +43,7 @@ class BotCommand : KoinComponent {
         var isSkip = false
     }
 
-    fun splitCommandToArray(command: String): Array<String> {
+    fun splitCommandToArray(command: String): List<String> {
         val regex = Regex("\"(\"|(?!\").)+\"|[^ ]+")
         val resultList = mutableListOf<String>()
         regex.findAll(command).forEach {
@@ -52,19 +52,33 @@ class BotCommand : KoinComponent {
             match = match.removeSuffix("\"")
             resultList.add(match)
         }
-        return resultList.toTypedArray()
+        return resultList.toList()
     }
 
     fun isBotCommand(command: String): Boolean {
         val commandArray = splitCommandToArray(command)
+        // 1つ目はリプライ文字列になることがある
+        // - <@USER_ID> /command
+        // - /command
+        // の2つのパターンで判定OKにする
         return CommandLine(DiscordCommandLine()).commandSpec.optionsMap()
-            .any { it.key == commandArray.firstOrNull() }
+            .any { it.key == commandArray.firstOrNull() || it.key == commandArray.elementAtOrNull(1) }
+    }
+
+    fun isReplyModeCommand(commandArray: List<String>): Boolean {
+        return CommandLine(DiscordCommandLine()).commandSpec.optionsMap()
+            .any { it.key == commandArray.elementAtOrNull(1) }
     }
 
     suspend fun onCommandRecive(command: String, event: MessageCreateEvent) {
         val discordCommandLine = DiscordCommandLine()
+        val inputCommands = splitCommandToArray(command).toMutableList()
+        if (isReplyModeCommand(inputCommands)) {
+            // 1つめのアイテムは
+            inputCommands.removeAt(0)
+        }
         try {
-            CommandLine(discordCommandLine).parseArgs(*splitCommandToArray(command))
+            CommandLine(discordCommandLine).parseArgs(*inputCommands.toTypedArray())
         } catch (ex: CommandLine.PicocliException) {
             throw CommandSyntaxException("コマンド解析中にエラーが発生しました: ${ex.message}")
         }
