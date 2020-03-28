@@ -24,7 +24,14 @@ class FFMpegEncoder(executablePath: String) : IEncoderProcess {
     }
 
     override fun startProcess() {
-        processBuilder.redirectError(File("/dev/null"))
+        processBuilder.redirectError(getDevNullFile())
         process = processBuilder.start()
+    }
+
+    private fun getDevNullFile(): File {
+        if (System.getProperty("os.name").toLowerCase().startsWith("windows")) {
+            return File("nul")
+        }
+        return File("/dev/null")
     }
 }

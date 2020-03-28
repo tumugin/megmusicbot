@@ -5,6 +5,7 @@ import com.sun.jna.ptr.PointerByReference
 import discord4j.voice.AudioProvider
 import kotlinx.coroutines.*
 import okio.BufferedSource
+import okio.EOFException
 import org.koin.core.KoinComponent
 import org.koin.core.get
 import tomp2p.opuswrapper.Opus
@@ -21,7 +22,9 @@ class RawOpusStreamProvider(sampleRate: Int = 48000, audioChannels: Int = 2) :
 
     // https://stackoverflow.com/questions/46786922/how-to-confirm-opus-encode-buffer-size
     private val opusFrameSize = 960
+    private val readBytes = opusFrameSize * 4
     var decodedPCMBuffer: BufferedSource? = null
+    var eofDetected = false
     private var encoderPointer: PointerByReference
 
     init {
@@ -52,11 +55,10 @@ class RawOpusStreamProvider(sampleRate: Int = 48000, audioChannels: Int = 2) :
                     buffer.flip()
                     return@withTimeout true
                 }
-                val pcmBuffer = mutableListOf<Byte>()
                 // 16bit PCM 2chの1フレームは4byte
-                while (pcmBuffer.size < opusFrameSize * 4) {
-                    pcmBuffer.add(decodedPCMBuffer!!.readByte())
-                }
+                decodedPCMBuffer!!.request(readBytes.toLong())
+                val pcmBuffer = decodedPCMBuffer!!.readByteArray(readBytes.toLong())
+                eofDetected = false
                 val combinedPcmBuffer = createShortPcmArray(pcmBuffer)
                 val encodedBuffer = ByteBuffer.allocate(512)
                 val result =
@@ -68,7 +70,7 @@ class RawOpusStreamProvider(sampleRate: Int = 48000, audioChannels: Int = 2) :
                         encodedBuffer.capacity()
                     )
                 if (result > 0) {
-                    val encoded: ByteArray = (1..result).map { 0.toByte() }.toByteArray()
+                    val encoded = ByteArray(result) { 0.toByte() }
                     encodedBuffer.get(encoded)
                     buffer.put(encoded)
                     buffer.flip()
@@ -76,12 +78,15 @@ class RawOpusStreamProvider(sampleRate: Int = 48000, audioChannels: Int = 2) :
                 }
                 return@withTimeout false
             }
+        } catch (ex: EOFException) {
+            eofDetected = true
+            return@runBlocking false
         } catch (ex: Exception) {
             return@runBlocking false
         }
     }
 
-    private fun createShortPcmArray(pcm: List<Byte>): ShortBuffer? {
+    private fun createShortPcmArray(pcm: ByteArray): ShortBuffer? {
         val nonEncodedBuffer = ShortBuffer.allocate(pcm.size / 2)
         for (i in pcm.indices step 2) {
             val firstByte = 0x000000FF and pcm[i].toInt()

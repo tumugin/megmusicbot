@@ -80,7 +80,7 @@ abstract class AbstractFileProvider(private val rawOpusStreamProvider: RawOpusSt
         logger.log(Level.INFO, "[Provider] Provider starting...")
         encoderProcess.startProcess()
         awaitAll(fetchOriginStream(), inputDataToEncoder(), getDataFromEncoder())
-        while (isActive && rawOpusStreamProvider.decodedPCMBuffer?.buffer?.size != 0L) {
+        while (isActive && !rawOpusStreamProvider.eofDetected) {
             delay(20)
         }
         logger.log(Level.INFO, "[Provider] Song play end. Provider disposing...")
