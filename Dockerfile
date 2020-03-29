@@ -17,3 +17,5 @@ WORKDIR /usr/src
 # Generated Binary:
 # /usr/src/build/libs/com.myskng.megmusicbot-1.0-FAIRY_STARS-all.jar
 RUN /usr/src/gradlew shadowJar
+
+#/usr/src/build/libs/com.myskng.megmusicbot-1.0-FAIRY_STARS-all.jar
