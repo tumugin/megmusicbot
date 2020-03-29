@@ -7,6 +7,7 @@ plugins {
     id("java")
     id("application")
     id("jarmonica") version Deps.harmonicaVersion apply false
+    id("com.github.johnrengelman.shadow") version "5.2.0"
     id("org.jetbrains.kotlin.jvm") version Deps.kotlinVersion
     id("com.github.ben-manes.versions") version "0.28.0"
 }
