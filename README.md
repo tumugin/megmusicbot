@@ -16,5 +16,7 @@ DBはデフォルトで同梱しているsqliteを使用するようになって
 
 ### 4. Botの起動
 ```bash
-./gradlew run --args='--bot'
+./gradlew run
 ```
+
+`--bot` は付けても付けなくても動きます。デフォルトのモードが `--bot` です。
