@@ -7,15 +7,6 @@ pluginManagement {
         mavenCentral()
         maven("https://jitpack.io")
     }
-    resolutionStrategy {
-        eachPlugin {
-            when (requested.id.id) {
-                "jarmonica" -> {
-                    useModule("com.github.KenjiOhtsuka:harmonica:${requested.version}")
-                }
-            }
-        }
-    }
 }
 
 includeBuild("./Discord4J") {

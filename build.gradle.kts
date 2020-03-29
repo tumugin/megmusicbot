@@ -1,19 +1,19 @@
+import io.github.cdimascio.dotenv.dotenv
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 buildscript {
+    dependencies {
+        classpath("io.github.cdimascio:java-dotenv:5.1.3")
+    }
 }
 
 plugins {
     id("java")
     id("application")
-    id("jarmonica") version Deps.harmonicaVersion apply false
     id("org.jetbrains.kotlin.jvm") version Deps.kotlinVersion
     id("com.github.ben-manes.versions") version "0.28.0"
+    id("org.flywaydb.flyway") version Deps.flywayVersion
 }
-
-// workaround
-// will cause "Could not find any convention object of type JavaPluginConvention"
-apply(mapOf("plugin" to "jarmonica"))
 
 application {
     mainClassName = "com.myskng.megmusicbot.main.MegmusicMain"
@@ -63,6 +63,7 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed:0.17.7")
     implementation("com.github.KenjiOhtsuka:harmonica:${Deps.harmonicaVersion}")
     implementation("org.xerial:sqlite-jdbc:${Deps.sqliteVersion}")
+    implementation("org.flywaydb:flyway-core:${Deps.flywayVersion}")
     // JSON
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.10.3")
     // Music Tag
@@ -86,4 +87,12 @@ dependencies {
 
 tasks.withType(KotlinCompile::class) {
     kotlinOptions.jvmTarget = "1.8"
+}
+
+flyway {
+    val dotEnvSetting = dotenv { ignoreIfMissing = true }
+    baselineVersion = "0"
+    url = dotEnvSetting["DB_CONNECTION"] ?: "jdbc:sqlite:megmusicbot.db"
+    user = dotEnvSetting["DB_USER"] ?: ""
+    password = dotEnvSetting["DB_PASSWORD"] ?: ""
 }

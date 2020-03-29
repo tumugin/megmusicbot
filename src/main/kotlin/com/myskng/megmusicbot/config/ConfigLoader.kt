@@ -9,13 +9,13 @@ import java.io.File
 fun readEnvConfig(envFileName: String = ".env"): BotConfig {
     val dotenv = dotenv {
         filename = envFileName
-        ignoreIfMalformed = true
-        ignoreIfMissing = true
     }
     return BotConfig(
         discordApiKey = dotenv["DISCORD_API_KEY"]!!,
         ffmpegPath = dotenv["FFMPEG_PATH"] ?: "ffmpeg",
         dbConnectionString = dotenv["DB_CONNECTION"] ?: "jdbc:sqlite:megmusicbot.db",
+        dbConnectionUser = dotenv["DB_USER"] ?: "",
+        dbConnectionPassword = dotenv["DB_PASSWORD"] ?: "",
         musicPaths = splitEnvVariableToToList(dotenv["MUSIC_PATHS"]!!)
     )
 }

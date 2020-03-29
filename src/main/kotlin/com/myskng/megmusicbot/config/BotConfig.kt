@@ -4,6 +4,8 @@ data class BotConfig(
     val discordApiKey: String,
     val ffmpegPath: String,
     val dbConnectionString: String,
+    val dbConnectionUser: String,
+    val dbConnectionPassword: String,
     val musicPaths: Array<String>
 ) {
     override fun equals(other: Any?): Boolean {
