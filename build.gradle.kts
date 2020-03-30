@@ -36,6 +36,7 @@ repositories {
     mavenCentral()
     maven("https://jitpack.io")
     maven("https://dl.bintray.com/ijabz/maven")
+    maven("https://oss.sonatype.org/content/repositories/snapshots")
 }
 
 tasks.test {
@@ -56,7 +57,7 @@ dependencies {
     implementation("org.koin:koin-core-ext:${Deps.koinVersion}")
     testImplementation("org.koin:koin-test:${Deps.koinVersion}")
     // Other libs
-    implementation("com.discord4j:discord4j-core") // バグが修正されるまで独自ビルドする
+    implementation("com.discord4j:discord4j-core:3.1.0-SNAPSHOT")
     implementation("com.squareup.okhttp3", "okhttp", "4.4.1")
     implementation("com.squareup.okio", "okio", "2.4.3")
     implementation("info.picocli:picocli:4.2.0")

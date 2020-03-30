@@ -5,6 +5,7 @@ import io.github.cdimascio.dotenv.dotenv
 fun readEnvConfig(envFileName: String = ".env"): BotConfig {
     val dotenv = dotenv {
         filename = envFileName
+        ignoreIfMissing = true
     }
     return BotConfig(
         discordApiKey = dotenv["DISCORD_API_KEY"]!!,
