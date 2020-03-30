@@ -9,7 +9,6 @@ import com.myskng.megmusicbot.scanner.SongScanner
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.runBlocking
-import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.koin.core.KoinComponent
@@ -17,7 +16,6 @@ import org.koin.core.get
 import picocli.CommandLine
 import java.sql.Connection
 import java.sql.DriverManager
-import javax.sql.DataSource
 
 class MegmusicMain {
     class AppCommand {
