@@ -21,5 +21,8 @@ steps:
       publishJUnitResults: true
       testResultsFiles: '**/TEST-*.xml'
       codeCoverageToolOption: JaCoCo
-      summaryFileLocation: '$(Build.ArtifactStagingDirectory)/**/*.xml'
-      tasks: 'build'
+      summaryFileLocation: '**/jacocoTestReport.xml'
+      tasks:
+        - 'build'
+        - 'test'
+        - 'jacocoTestReport'
