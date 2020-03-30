@@ -29,7 +29,7 @@ class SongScannerTest : AbstractDefaultTester(), KoinComponent {
                 BotStateStore()
             }
             single {
-                BotConfig("UNUSED", "UNUSED", "UNUSED", arrayOf("."))
+                BotConfig("UNUSED", "UNUSED", "UNUSED", "UNUSED", "UNUSED", arrayOf("."))
             }
         })
         super.setupKoin()

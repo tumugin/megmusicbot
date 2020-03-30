@@ -6,4 +6,5 @@ object Deps {
     const val junitPlatformVersion = "1.6.0"
     const val junitJupiterVersion = "5.6.0"
     const val sqliteVersion = "3.30.1"
+    const val flywayVersion = "6.3.2"
 }
