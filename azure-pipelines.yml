@@ -20,4 +20,5 @@ steps:
       jdkArchitectureOption: 'x64'
       publishJUnitResults: true
       testResultsFiles: '**/TEST-*.xml'
+      codeCoverageToolOption: JaCoCo
       tasks: 'build'

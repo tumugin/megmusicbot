@@ -13,6 +13,7 @@ plugins {
     id("org.jetbrains.kotlin.jvm") version Deps.kotlinVersion
     id("com.github.ben-manes.versions") version "0.28.0"
     id("org.flywaydb.flyway") version Deps.flywayVersion
+    id("jacoco")
 }
 
 application {
