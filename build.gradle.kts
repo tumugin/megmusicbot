@@ -102,6 +102,5 @@ flyway {
 tasks.jacocoTestReport {
     reports {
         xml.isEnabled = true
-        csv.isEnabled = true
     }
 }
