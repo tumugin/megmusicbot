@@ -27,8 +27,8 @@ java {
     targetCompatibility = JavaVersion.VERSION_1_8
 }
 
-tasks.withType(Wrapper::class) {
-    gradleVersion = "6.2.2"
+tasks.wrapper {
+    gradleVersion = "6.3"
 }
 
 repositories {
@@ -38,7 +38,7 @@ repositories {
     maven("https://dl.bintray.com/ijabz/maven")
 }
 
-tasks.withType(Test::class) {
+tasks.test {
     useJUnitPlatform {
         includeEngines("junit-jupiter")
     }
@@ -96,4 +96,11 @@ flyway {
     url = dotEnvSetting["DB_CONNECTION"] ?: "jdbc:sqlite:megmusicbot.db"
     user = dotEnvSetting["DB_USER"] ?: ""
     password = dotEnvSetting["DB_PASSWORD"] ?: ""
+}
+
+tasks.jacocoTestReport {
+    reports {
+        xml.isEnabled = true
+        csv.isEnabled = true
+    }
 }
