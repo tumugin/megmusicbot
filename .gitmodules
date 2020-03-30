@@ -1,9 +1,0 @@
-[submodule "Discord4J"]
-	path = Discord4J
-	url = https://github.com/Discord4J/Discord4J.git
-[submodule "discord-json"]
-	path = discord-json
-	url = https://github.com/Discord4J/discord-json.git
-[submodule "Stores"]
-	path = Stores
-	url = https://github.com/Discord4J/Stores.git
