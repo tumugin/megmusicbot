@@ -14,6 +14,7 @@ plugins {
     id("com.github.johnrengelman.shadow") version "5.2.0"
     id("com.github.ben-manes.versions") version "0.28.0"
     id("org.flywaydb.flyway") version Deps.flywayVersion
+    id("jacoco")
 }
 
 application {
@@ -27,8 +28,8 @@ java {
     targetCompatibility = JavaVersion.VERSION_1_8
 }
 
-tasks.withType(Wrapper::class) {
-    gradleVersion = "6.2.2"
+tasks.wrapper {
+    gradleVersion = "6.3"
 }
 
 repositories {
@@ -36,9 +37,10 @@ repositories {
     mavenCentral()
     maven("https://jitpack.io")
     maven("https://dl.bintray.com/ijabz/maven")
+    maven("https://oss.sonatype.org/content/repositories/snapshots")
 }
 
-tasks.withType(Test::class) {
+tasks.test {
     useJUnitPlatform {
         includeEngines("junit-jupiter")
     }
@@ -56,7 +58,7 @@ dependencies {
     implementation("org.koin:koin-core-ext:${Deps.koinVersion}")
     testImplementation("org.koin:koin-test:${Deps.koinVersion}")
     // Other libs
-    implementation("com.discord4j:discord4j-core") // バグが修正されるまで独自ビルドする
+    implementation("com.discord4j:discord4j-core:3.1.0-SNAPSHOT")
     implementation("com.squareup.okhttp3", "okhttp", "4.4.1")
     implementation("com.squareup.okio", "okio", "2.4.3")
     implementation("info.picocli:picocli:4.2.0")
@@ -96,4 +98,11 @@ flyway {
     url = dotEnvSetting["DB_CONNECTION"] ?: "jdbc:sqlite:megmusicbot.db"
     user = dotEnvSetting["DB_USER"] ?: ""
     password = dotEnvSetting["DB_PASSWORD"] ?: ""
+}
+
+tasks.jacocoTestReport {
+    reports {
+        xml.isEnabled = true
+        csv.isEnabled = true
+    }
 }

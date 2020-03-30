@@ -1,14 +1,11 @@
 package com.myskng.megmusicbot.config
 
-import com.fasterxml.jackson.databind.PropertyNamingStrategy
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import io.github.cdimascio.dotenv.dotenv
-import java.io.File
 
 fun readEnvConfig(envFileName: String = ".env"): BotConfig {
     val dotenv = dotenv {
         filename = envFileName
+        ignoreIfMissing = true
     }
     return BotConfig(
         discordApiKey = dotenv["DISCORD_API_KEY"]!!,

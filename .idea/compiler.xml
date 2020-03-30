@@ -1,22 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
-    <annotationProcessing>
-      <profile name="Gradle Imported" enabled="true">
-        <outputRelativeToContentRoot value="true" />
-        <processorPath useClasspath="false">
-          <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.immutables/value/2.8.3/52b7652fb429991efda026a6cbd93057ab888763/value-2.8.3.jar" />
-        </processorPath>
-        <module name="discord-json.main" />
-      </profile>
-      <profile name="Gradle Imported" enabled="true">
-        <outputRelativeToContentRoot value="true" />
-        <processorPath useClasspath="false">
-          <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.austinv11.servicer/Servicer/1.0.0/55e6948826f95144c65f8b8570f6ca1b64df766a/Servicer-1.0.0.jar" />
-        </processorPath>
-        <module name="Stores.redis.main" />
-      </profile>
-    </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="com.myskng.megmusicbot.buildSrc.main" target="11" />
       <module name="com.myskng.megmusicbot.buildSrc.test" target="11" />
