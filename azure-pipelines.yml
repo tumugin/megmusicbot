@@ -22,7 +22,4 @@ steps:
       testResultsFiles: '**/TEST-*.xml'
       codeCoverageToolOption: JaCoCo
       summaryFileLocation: '**/jacocoTestReport.xml'
-      tasks:
-        - 'build'
-        - 'test'
-        - 'jacocoTestReport'
+      tasks: 'build test jacocoTestReport'
