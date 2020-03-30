@@ -30,8 +30,8 @@ steps:
       publishJUnitResults: true
       testResultsFiles: '**/TEST-*.xml'
       codeCoverageToolOption: JaCoCo
-      summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/reports/jacoco/test/jacocoTestReport.xml'
-      reportDirectory: '$(System.DefaultWorkingDirectory)/**/reports/jacoco/test/html'
+      summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/reports/jacoco/jacocoTestReport.xml'
+      reportDirectory: '$(System.DefaultWorkingDirectory)/**/reports/jacoco/html'
       additionalCodeCoverageFiles: '$(System.DefaultWorkingDirectory)/**/*.exec'
       pathToSources: '$(System.DefaultWorkingDirectory)/src/main/kotlin'
   - script: |
