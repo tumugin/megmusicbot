@@ -18,8 +18,7 @@ RUN /usr/src/gradlew shadowJar
 RUN curl -LO https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz && \
     tar -xvf ffmpeg*.tar.xz && \
     mv ffmpeg-*/ffmpeg /usr/src/ffmpeg && \
-    rm -rf ffmpeg-* && \
-    ls -la
+    rm -rf ffmpeg-*
 
 ## Production Container
 FROM adoptopenjdk:14_36-jre-hotspot-bionic
@@ -38,19 +37,6 @@ WORKDIR /megmusic/data
 COPY --from=build /usr/src/build/libs/com.myskng.megmusicbot-1.0-FAIRY_STARS-all.jar /megmusic
 COPY --from=build /usr/src/ffmpeg /usr/bin
 
-# Create entrypoint script.
-RUN echo '#!/bin/sh' >> /megmusic/entrypoint.sh && \
-    echo 'java -jar $1 --db-migrate' >> /megmusic/entrypoint.sh && \
-    echo 'if [ $? != 0 ] ; then' >> /megmusic/entrypoint.sh && \
-    echo '    exit 1' >> /megmusic/entrypoint.sh && \
-    echo 'fi' >> /megmusic/entrypoint.sh && \
-    echo 'java -jar $1 --scanner' >> /megmusic/entrypoint.sh && \
-    echo 'if [ $? != 0 ] ; then' >> /megmusic/entrypoint.sh && \
-    echo '    exit 1' >> /megmusic/entrypoint.sh && \
-    echo 'fi' >> /megmusic/entrypoint.sh && \
-    echo 'exec java -jar $1' >> /megmusic/entrypoint.sh && \
-    chmod +x /megmusic/entrypoint.sh
-
 # Set Entrypoint.
-ENTRYPOINT [ "/megmusic/entrypoint.sh" ]
+ENTRYPOINT [ "/opt/java/openjdk/bin/java", "-jar" ]
 CMD [ "/megmusic/com.myskng.megmusicbot-1.0-FAIRY_STARS-all.jar" ]
