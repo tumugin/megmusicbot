@@ -9,7 +9,16 @@ trigger:
 pool:
   vmImage: 'ubuntu-18.04'
 
+variables:
+  GRADLE_USER_HOME: $(Pipeline.Workspace)/.gradle
+
 steps:
+  - task: Cache@2
+    inputs:
+      key: 'gradle | "$(Agent.OS)"'
+      restoreKeys: gradle
+      path: $(GRADLE_USER_HOME)
+    displayName: Gradle build cache
   - task: Gradle@2
     inputs:
       workingDirectory: ''
@@ -20,4 +29,12 @@ steps:
       jdkArchitectureOption: 'x64'
       publishJUnitResults: true
       testResultsFiles: '**/TEST-*.xml'
-      tasks: 'build'
+      codeCoverageToolOption: JaCoCo
+      summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/reports/jacoco/jacocoTestReport.xml'
+      reportDirectory: '$(System.DefaultWorkingDirectory)/**/reports/jacoco/html'
+      additionalCodeCoverageFiles: '$(System.DefaultWorkingDirectory)/**/*.exec'
+      pathToSources: '$(System.DefaultWorkingDirectory)/src/main/kotlin'
+  - script: |
+      # stop the Gradle daemon to ensure no files are left open (impacting the save cache operation later)
+      ./gradlew --stop
+    displayName: Stop Gradle
