@@ -2,36 +2,10 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <bytecodeTargetLevel>
-      <module name="com.myskng.megmusicbot.buildSrc.main" target="11" />
-      <module name="com.myskng.megmusicbot.buildSrc.test" target="11" />
-      <module name="com.myskng.megmusicbot.main" target="1.8" />
-      <module name="com.myskng.megmusicbot.test" target="1.8" />
-      <module name="discord-json.main" target="1.8" />
-      <module name="discord-json.test" target="1.8" />
-      <module name="Discord4J.common.main" target="1.8" />
-      <module name="Discord4J.common.test" target="1.8" />
-      <module name="Discord4J.core.main" target="1.8" />
-      <module name="Discord4J.core.test" target="1.8" />
-      <module name="Discord4J.gateway.main" target="1.8" />
-      <module name="Discord4J.gateway.test" target="1.8" />
-      <module name="Discord4J.main" target="1.8" />
-      <module name="Discord4J.rest.main" target="1.8" />
-      <module name="Discord4J.rest.test" target="1.8" />
-      <module name="Discord4J.test" target="1.8" />
-      <module name="Discord4J.voice.main" target="1.8" />
-      <module name="Discord4J.voice.test" target="1.8" />
-      <module name="Stores.api.main" target="1.8" />
-      <module name="Stores.api.test" target="1.8" />
-      <module name="Stores.caffeine.main" target="1.8" />
-      <module name="Stores.caffeine.test" target="1.8" />
-      <module name="Stores.jdk.main" target="1.8" />
-      <module name="Stores.jdk.test" target="1.8" />
-      <module name="Stores.main" target="1.8" />
-      <module name="Stores.redis.main" target="1.8" />
-      <module name="Stores.redis.test" target="1.8" />
-      <module name="Stores.tck.main" target="1.8" />
-      <module name="Stores.tck.test" target="1.8" />
-      <module name="Stores.test" target="1.8" />
+      <module name="com.myskng.megmusicbot.buildSrc.main" target="13" />
+      <module name="com.myskng.megmusicbot.buildSrc.test" target="13" />
+      <module name="com.myskng.megmusicbot.main" target="13" />
+      <module name="com.myskng.megmusicbot.test" target="13" />
     </bytecodeTargetLevel>
   </component>
 </project>
