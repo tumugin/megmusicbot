@@ -32,12 +32,12 @@ docker-compose build
 
 ### 3. DBのセットアップ(マイグレーションの実行)
 ```bash
-docker-compose run --rm megmusic /megmusic/com.myskng.megmusicbot-1.0-FAIRY_STARS-all.jar --db-migrate
+docker-compose run --rm megmusic --db-migrate
 ```
 
 ### 4. 曲のスキャンの実行
 ```bash
-docker-compose run --rm megmusic /megmusic/com.myskng.megmusicbot-1.0-FAIRY_STARS-all.jar --scanner
+docker-compose run --rm megmusic --scanner
 ```
 
 ### 5. Botの起動

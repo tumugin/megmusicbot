@@ -30,7 +30,6 @@ ENV FFMPEG_PATH="/usr/bin/ffmpeg" \
 # Add megmusic user
 RUN useradd -b / -m megmusic
 USER megmusic
-RUN mkdir /megmusic/data
 WORKDIR /megmusic/data
 
 # Copy jar and FFmpeg from build stage.
@@ -38,5 +37,4 @@ COPY --from=build /usr/src/build/libs/com.myskng.megmusicbot-1.0-FAIRY_STARS-all
 COPY --from=build /usr/src/ffmpeg /usr/bin
 
 # Set Entrypoint.
-ENTRYPOINT [ "/opt/java/openjdk/bin/java", "-jar" ]
-CMD [ "/megmusic/com.myskng.megmusicbot-1.0-FAIRY_STARS-all.jar" ]
+ENTRYPOINT [ "/opt/java/openjdk/bin/java", "-jar", "/megmusic/com.myskng.megmusicbot-1.0-FAIRY_STARS-all.jar" ]

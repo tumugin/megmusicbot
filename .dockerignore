@@ -1,3 +1,7 @@
-sample.env
-gradlew.bat
-.editorconfig
+/.gradle
+/.idea
+/build
+/*.db
+/.env
+/music
+/database
