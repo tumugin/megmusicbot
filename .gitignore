@@ -70,9 +70,13 @@ fastlane/readme.md
 # Ruby files
 vendor/
 
-#Music bot database file
+# Music bot database file
 /megmusicbot.db
 /megmusictest.db
+
+# Docker
+/database
+/music
 
 # config
 /config.json
