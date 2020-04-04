@@ -38,5 +38,4 @@ COPY --from=build /usr/src/build/libs/com.myskng.megmusicbot-1.0-FAIRY_STARS-all
 COPY --from=build /usr/src/ffmpeg /usr/bin
 
 # Set Entrypoint.
-ENTRYPOINT [ "/opt/java/openjdk/bin/java", "-jar" ]
-CMD [ "/megmusic/com.myskng.megmusicbot-1.0-FAIRY_STARS-all.jar" ]
+ENTRYPOINT [ "/opt/java/openjdk/bin/java", "-jar", "/megmusic/com.myskng.megmusicbot-1.0-FAIRY_STARS-all.jar" ]
