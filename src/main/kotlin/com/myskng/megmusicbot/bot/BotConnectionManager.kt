@@ -52,7 +52,7 @@ class BotConnectionManager : KoinComponent, CoroutineScope {
                 event.message.userMentionIds.contains(botUserId)
             if (isMention && botCommand.isBotCommand(event.message.content)) {
                 try {
-                    botCommand.onCommandRecive(event.message.content, event)
+                    botCommand.onCommandReceive(event.message.content, event)
                 } catch (ex: CommandSyntaxException) {
                     event.message.channel.awaitSingle().createMessage(ex.message ?: "Unknown Error").awaitSingle()
                 } catch (ex: Exception) {
