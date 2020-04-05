@@ -8,6 +8,8 @@ import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Assert
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.params.ParameterizedTest
@@ -20,6 +22,7 @@ import org.koin.dsl.module
 import java.util.stream.Stream
 
 @ExtendWith(MockKExtension::class)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class BotCommandTest {
     @ParameterizedTest
     @ArgumentsSource(TestBotCommands::class)
@@ -146,5 +149,10 @@ class BotCommandTest {
             )
         }
         return mockBotCommandProcessor
+    }
+
+    @AfterAll
+    fun afterAll() {
+        stopKoin()
     }
 }
