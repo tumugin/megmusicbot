@@ -96,7 +96,14 @@ class BotCommandTest {
                             cmdP.leaveVoiceChannel(mesg)
                         }
                     },
-                    // TODO: 検索コマンドと再生コマンドは厄介そうなのであとでやる
+                    // TODO: 検索コマンドは厄介そうなのであとでやる
+                    // 再生コマンド
+                    Pair("/play 1") { cmdS, cmd, cmdP, mesg ->
+                        cmd.onCommandReceive(cmdS, mesg)
+                        coVerify {
+                            cmdP.playSong(0, mesg)
+                        }
+                    },
                     // キューコマンド
                     Pair("/queue") { cmdS, cmd, cmdP, mesg ->
                         cmd.onCommandReceive(cmdS, mesg)
