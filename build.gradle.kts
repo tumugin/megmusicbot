@@ -52,6 +52,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect:${Deps.kotlinVersion}")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Deps.kotlinCoroutine}")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:${Deps.kotlinCoroutine}")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:${Deps.kotlinCoroutine}")
     implementation("io.projectreactor.kotlin:reactor-kotlin-extensions:1.0.2.RELEASE")
     // Koin
     implementation("org.koin:koin-core:${Deps.koinVersion}")

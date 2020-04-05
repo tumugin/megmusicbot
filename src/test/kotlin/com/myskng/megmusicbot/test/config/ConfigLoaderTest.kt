@@ -1,6 +1,6 @@
 package com.myskng.megmusicbot.test.config
 
-import com.myskng.megmusicbot.config.splitEnvVariableToToList
+import com.myskng.megmusicbot.config.splitEnvVariableToList
 import org.junit.Assert
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.params.ParameterizedTest
@@ -13,7 +13,7 @@ class ConfigLoaderTest {
     @ParameterizedTest
     @ArgumentsSource(TestPaths::class)
     fun testArrayEnvConfig(testString: String, expected: Array<String>) {
-        val result = splitEnvVariableToToList(testString)
+        val result = splitEnvVariableToList(testString)
         Assert.assertArrayEquals(expected, result)
     }
 

@@ -13,11 +13,11 @@ fun readEnvConfig(envFileName: String = ".env"): BotConfig {
         dbConnectionString = dotenv["DB_CONNECTION"] ?: "jdbc:sqlite:megmusicbot.db",
         dbConnectionUser = dotenv["DB_USER"] ?: "",
         dbConnectionPassword = dotenv["DB_PASSWORD"] ?: "",
-        musicPaths = splitEnvVariableToToList(dotenv["MUSIC_PATHS"]!!)
+        musicPaths = splitEnvVariableToList(dotenv["MUSIC_PATHS"]!!)
     )
 }
 
-fun splitEnvVariableToToList(command: String): Array<String> {
+fun splitEnvVariableToList(command: String): Array<String> {
     val regex = Regex("(\"[^\"]+\"|[^\\s\"]+)")
     val resultList = mutableListOf<String>()
     var tempCommandStyleString = command

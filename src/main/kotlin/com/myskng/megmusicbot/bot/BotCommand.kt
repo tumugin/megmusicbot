@@ -46,7 +46,7 @@ class BotCommand : KoinComponent {
         var isNowPlaying = false
     }
 
-    fun splitCommandToArray(command: String): List<String> {
+    private fun splitCommandToArray(command: String): List<String> {
         val regex = Regex("\"(\"|(?!\").)+\"|[^ ]+")
         val resultList = mutableListOf<String>()
         regex.findAll(command).forEach {
@@ -73,7 +73,7 @@ class BotCommand : KoinComponent {
             .any { it.key == commandArray.elementAtOrNull(1) }
     }
 
-    suspend fun onCommandRecive(command: String, event: MessageCreateEvent) {
+    suspend fun onCommandReceive(command: String, event: MessageCreateEvent) {
         val discordCommandLine = DiscordCommandLine()
         val inputCommands = splitCommandToArray(command).toMutableList()
         if (isReplyModeCommand(inputCommands)) {
