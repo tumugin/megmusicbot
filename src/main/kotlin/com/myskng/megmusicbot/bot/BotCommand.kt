@@ -70,7 +70,7 @@ class BotCommand : KoinComponent {
 
     fun isReplyModeCommand(commandArray: List<String>): Boolean {
         return CommandLine(DiscordCommandLine()).commandSpec.optionsMap()
-            .any { it.key == commandArray.elementAtOrNull(1) }
+            .any { it.key.startsWith("/") && it.key == commandArray.elementAtOrNull(1) }
     }
 
     suspend fun onCommandReceive(command: String, event: MessageCreateEvent) {
