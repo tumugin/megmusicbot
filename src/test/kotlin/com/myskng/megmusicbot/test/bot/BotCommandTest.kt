@@ -2,6 +2,8 @@ package com.myskng.megmusicbot.test.bot
 
 import com.myskng.megmusicbot.bot.BotCommand
 import com.myskng.megmusicbot.bot.BotCommandProcessor
+import com.myskng.megmusicbot.database.SearchQuery
+import com.myskng.megmusicbot.database.SongSearchType
 import discord4j.core.event.domain.message.MessageCreateEvent
 import io.mockk.coVerify
 import io.mockk.junit5.MockKExtension
@@ -96,7 +98,42 @@ class BotCommandTest {
                             cmdP.leaveVoiceChannel(mesg)
                         }
                     },
-                    // TODO: 検索コマンドは厄介そうなのであとでやる
+                    // 検索コマンド
+                    Pair("/search title ネプテューヌ☆サガして") { cmdS, cmd, cmdP, mesg ->
+                        cmd.onCommandReceive(cmdS, mesg)
+                        val queryList = mutableListOf(SearchQuery(SongSearchType.Title, "ネプテューヌ☆サガして"))
+                            .toTypedArray()
+                        coVerify {
+                            cmdP.searchSong(queryList, mesg)
+                        }
+                    },
+                    Pair("/search artist 純情のアフィリア") { cmdS, cmd, cmdP, mesg ->
+                        cmd.onCommandReceive(cmdS, mesg)
+                        val queryList = mutableListOf(SearchQuery(SongSearchType.Artist, "純情のアフィリア"))
+                            .toTypedArray()
+                        coVerify {
+                            cmdP.searchSong(queryList, mesg)
+                        }
+                    },
+                    Pair("/search album ジュンジョウ・ガイドストーン") { cmdS, cmd, cmdP, mesg ->
+                        cmd.onCommandReceive(cmdS, mesg)
+                        val queryList = mutableListOf(SearchQuery(SongSearchType.Album, "ジュンジョウ・ガイドストーン"))
+                            .toTypedArray()
+                        coVerify {
+                            cmdP.searchSong(queryList, mesg)
+                        }
+                    },
+                    Pair("/search title 魔法のチョコレート伝説 artist 純情のアフィリア album ジュンジョウ・ガイドストーン") { cmdS, cmd, cmdP, mesg ->
+                        cmd.onCommandReceive(cmdS, mesg)
+                        val queryList = mutableListOf(
+                            SearchQuery(SongSearchType.Album, "ジュンジョウ・ガイドストーン"),
+                            SearchQuery(SongSearchType.Artist, "純情のアフィリア"),
+                            SearchQuery(SongSearchType.Title, "魔法のチョコレート伝説")
+                        ).toTypedArray()
+                        coVerify {
+                            cmdP.searchSong(queryList, mesg)
+                        }
+                    },
                     // 再生コマンド
                     Pair("/play 1") { cmdS, cmd, cmdP, mesg ->
                         cmd.onCommandReceive(cmdS, mesg)
