@@ -11,12 +11,12 @@ import com.myskng.megmusicbot.text.DefaultLangStrings
 import discord4j.core.`object`.entity.channel.VoiceChannel
 import discord4j.core.event.domain.message.MessageCreateEvent
 import discord4j.voice.VoiceConnection
-import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactive.awaitSingle
 import org.koin.core.KoinComponent
 import org.koin.core.inject
 import reactor.kotlin.core.publisher.toMono
+import java.awt.Color
 
 open class BotCommandProcessor : KoinComponent {
     private val store by inject<BotStateStore>()
@@ -25,7 +25,13 @@ open class BotCommandProcessor : KoinComponent {
     private var voiceConnection: VoiceConnection? = null
 
     open suspend fun outputHelpText(event: MessageCreateEvent) {
-        event.message.channel.awaitFirst().createMessage(botStrings.botHelpText).awaitSingle()
+        event.message.channel.awaitSingle()
+            .createEmbed {
+                it.setTitle("使い方")
+                    .setDescription(botStrings.botHelpText)
+                    .setColor(Color(92, 230, 38))
+            }
+            .awaitSingle()
     }
 
     open suspend fun joinVoiceChannel(event: MessageCreateEvent) {
@@ -82,9 +88,12 @@ open class BotCommandProcessor : KoinComponent {
                     "> ${rowHeaderPlaceHolder}Artist: ${item.artist}"
             printText += rowText + "\n"
         }
-        event.message.channel
-            .awaitSingle()
-            .createMessage("**${originalResultList.count()}件**見つかりました\n$printText")
+        event.message.channel.awaitSingle()
+            .createEmbed {
+                it.setTitle("検索結果")
+                    .setDescription("**${originalResultList.count()}件**見つかりました\n$printText")
+                    .setColor(Color(247, 161, 186))
+            }
             .awaitSingle()
     }
 
@@ -116,14 +125,20 @@ open class BotCommandProcessor : KoinComponent {
             }.forEach {
                 printStr += "\n" + it
             }
-            event.message.channel
-                .awaitSingle()
-                .createMessage(printStr)
+            event.message.channel.awaitSingle()
+                .createEmbed {
+                    it.setTitle("再生キュー")
+                        .setDescription(printStr)
+                        .setColor(Color(122, 218, 214))
+                }
                 .awaitSingle()
         } else {
-            event.message.channel
-                .awaitSingle()
-                .createMessage("再生キューが空です。")
+            event.message.channel.awaitSingle()
+                .createEmbed {
+                    it.setTitle("再生キュー")
+                        .setDescription("再生キューが空です。")
+                        .setColor(Color(215, 56, 95))
+                }
                 .awaitSingle()
         }
     }
@@ -141,9 +156,12 @@ open class BotCommandProcessor : KoinComponent {
             return
         }
         val song = store.songQueue.playingSong!!
-        event.message.channel
-            .awaitSingle()
-            .createMessage("**現在再生中の曲**\nTitle: ${song.title}\nAlbum: ${song.album}\nArtist: ${song.artist}")
+        event.message.channel.awaitSingle()
+            .createEmbed {
+                it.setTitle("再生中の曲")
+                    .setDescription("**Title:** ${song.title}\n**Album:** ${song.album}\n**Artist:** ${song.artist}")
+                    .setColor(Color(209, 98, 203))
+            }
             .awaitSingle()
     }
 }
