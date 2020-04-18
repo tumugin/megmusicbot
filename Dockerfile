@@ -27,7 +27,7 @@ FROM adoptopenjdk:14_36-jre-hotspot-bionic
 ENV FFMPEG_PATH="/usr/bin/ffmpeg" \
     DB_CONNECTION="jdbc:sqlite:megmusicbot.db"
 
-# Add megmusic user
+# Make DB dir
 WORKDIR /megmusic/data
 
 # Copy jar and FFmpeg from build stage.
