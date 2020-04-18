@@ -164,4 +164,21 @@ open class BotCommandProcessor : KoinComponent {
             }
             .awaitSingle()
     }
+
+    open suspend fun clearAllQueue(event: MessageCreateEvent) {
+        store.songQueue.songQueue.clear()
+        event.message.channel
+            .awaitSingle()
+            .createMessage("キューをすべて消去しました。")
+            .awaitSingle()
+    }
+
+    open suspend fun playAllSongs(event: MessageCreateEvent) {
+        store.songQueue.songQueue.addAll(store.currentSearchList)
+        val songCount = store.currentSearchList.count()
+        event.message.channel
+            .awaitSingle()
+            .createMessage("検索結果にある全ての楽曲(${songCount}曲)をキューに追加しました。")
+            .awaitSingle()
+    }
 }

@@ -2,6 +2,7 @@ package com.myskng.megmusicbot.bot
 
 import com.myskng.megmusicbot.bot.music.LocalSong
 import com.myskng.megmusicbot.database.Songs
+import org.jetbrains.exposed.sql.max
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -10,11 +11,12 @@ class RandomSongPlayer {
     val playedSongId = mutableListOf<Int>()
 
     fun onEmptyQueue(): LocalSong? {
-        val biggest = transaction { Songs.selectAll().orderBy(Songs.id, false).limit(1).toList() }
-        if (biggest.isEmpty()) {
+        val maxId = Songs.id.max()
+        val biggest = transaction { Songs.slice(maxId).selectAll().map { it[maxId] } }
+        if (biggest.isEmpty() || biggest.firstOrNull() == null) {
             return null
         }
-        val randomList = (1..biggest.first()[Songs.id]).toMutableList()
+        val randomList = (1..biggest.first()!!).toMutableList()
         if (playedSongId.containsAll(randomList).not()) {
             randomList.removeAll(playedSongId)
         } else {
