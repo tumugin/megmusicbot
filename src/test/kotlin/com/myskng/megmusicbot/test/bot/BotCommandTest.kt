@@ -45,6 +45,8 @@ class BotCommandTest {
                 Pair("/skip", true),
                 Pair("/now", true),
                 Pair("/nowplaying", true),
+                Pair("/clear", true),
+                Pair("/playall", true),
                 Pair("上田麗奈", false),
                 Pair("やっぱ白石晴香なんだよなぁ...", false)
             )
@@ -166,6 +168,20 @@ class BotCommandTest {
                         cmd.onCommandReceive(cmdS, mesg)
                         coVerify {
                             cmdP.isNowPlaying(mesg)
+                        }
+                    },
+                    // キュー全消去コマンド
+                    Pair("/clear") { cmdS, cmd, cmdP, mesg ->
+                        cmd.onCommandReceive(cmdS, mesg)
+                        coVerify {
+                            cmdP.clearAllQueue(mesg)
+                        }
+                    },
+                    // 検索結果を全て再生コマンド
+                    Pair("/playall") { cmdS, cmd, cmdP, mesg ->
+                        cmd.onCommandReceive(cmdS, mesg)
+                        coVerify {
+                            cmdP.playAllSongs(mesg)
                         }
                     }
                 )

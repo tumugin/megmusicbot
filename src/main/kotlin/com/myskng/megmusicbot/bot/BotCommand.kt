@@ -44,6 +44,12 @@ class BotCommand : KoinComponent {
 
         @CommandLine.Option(names = ["/now", "/nowplaying"])
         var isNowPlaying = false
+
+        @CommandLine.Option(names = ["/clear"])
+        var isClearAll = false
+
+        @CommandLine.Option(names = ["/playall"])
+        var isPlayAll = false
     }
 
     private fun splitCommandToArray(command: String): List<String> {
@@ -122,6 +128,12 @@ class BotCommand : KoinComponent {
             }
             discordCommandLine.isNowPlaying -> {
                 processor.isNowPlaying(event)
+            }
+            discordCommandLine.isClearAll -> {
+                processor.clearAllQueue(event)
+            }
+            discordCommandLine.isPlayAll -> {
+                processor.playAllSongs(event)
             }
             else -> {
                 throw CommandSyntaxException("コマンドの記法が間違っています。")
