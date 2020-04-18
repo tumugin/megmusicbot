@@ -28,7 +28,6 @@ ENV FFMPEG_PATH="/usr/bin/ffmpeg" \
     DB_CONNECTION="jdbc:sqlite:megmusicbot.db"
 
 # Add megmusic user
-RUN useradd -b / -m megmusic
 WORKDIR /megmusic/data
 
 # Copy jar and FFmpeg from build stage.
