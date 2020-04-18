@@ -29,7 +29,6 @@ ENV FFMPEG_PATH="/usr/bin/ffmpeg" \
 
 # Add megmusic user
 RUN useradd -b / -m megmusic
-USER megmusic
 WORKDIR /megmusic/data
 
 # Copy jar and FFmpeg from build stage.
