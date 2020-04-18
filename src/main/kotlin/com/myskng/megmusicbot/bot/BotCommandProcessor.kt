@@ -76,11 +76,10 @@ open class BotCommandProcessor : KoinComponent {
     }
 
     open suspend fun searchSong(query: Array<SearchQuery>, event: MessageCreateEvent) {
-        val originalResultList = songSearch.searchSong(query)
-        val resultList = originalResultList.take(5)
+        val resultList = songSearch.searchSong(query)
         store.currentSearchList = resultList
         var printText = ""
-        resultList.forEachIndexed { num, item ->
+        resultList.take(5).forEachIndexed { num, item ->
             val rowNumHeader = "[${num + 1}] "
             val rowHeaderPlaceHolder = rowNumHeader.replace(Regex("."), " ")
             val rowText = "> ${rowNumHeader}Title: ${item.title}\n" +
@@ -91,7 +90,7 @@ open class BotCommandProcessor : KoinComponent {
         event.message.channel.awaitSingle()
             .createEmbed {
                 it.setTitle("検索結果")
-                    .setDescription("**${originalResultList.count()}件**見つかりました\n$printText")
+                    .setDescription("**${resultList.count()}件**見つかりました\n$printText")
                     .setColor(Color(247, 161, 186))
             }
             .awaitSingle()
