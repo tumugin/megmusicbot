@@ -59,7 +59,7 @@ dependencies {
     implementation("org.koin:koin-core-ext:${Deps.koinVersion}")
     testImplementation("org.koin:koin-test:${Deps.koinVersion}")
     // Other libs
-    implementation("com.discord4j:discord4j-core:3.1.0-SNAPSHOT")
+    implementation("com.discord4j:discord4j-core:3.1.0.M1")
     implementation("com.squareup.okhttp3", "okhttp", "4.4.1")
     implementation("com.squareup.okio", "okio", "2.4.3")
     implementation("info.picocli:picocli:4.2.0")

@@ -112,6 +112,22 @@ open class BotCommandProcessor : KoinComponent {
         }
     }
 
+    open suspend fun playSongWarikomi(playIndex: Int, event: MessageCreateEvent) {
+        if (store.currentSearchList.count() >= playIndex + 1) {
+            val song = store.currentSearchList[playIndex]
+            store.songQueue.songQueue.add(0, song)
+            event.message.channel
+                .awaitSingle()
+                .createMessage("**${song.title}**をキューの先頭に追加しました。")
+                .awaitSingle()
+        } else {
+            event.message.channel
+                .awaitSingle()
+                .createMessage("不正な番号が指定されました。")
+                .awaitSingle()
+        }
+    }
+
     open suspend fun printQueue(event: MessageCreateEvent) {
         if (store.songQueue.songQueue.isNotEmpty()) {
             var printStr = "現在キューには${store.songQueue.songQueue.count()}件の曲が追加されています。"

@@ -36,6 +36,9 @@ class BotCommand : KoinComponent {
         @CommandLine.Option(names = ["/play"])
         var play: Int = -1
 
+        @CommandLine.Option(names = ["/warikomi"])
+        var warikomi: Int = -1
+
         @CommandLine.Option(names = ["/queue"])
         var isQueue = false
 
@@ -119,6 +122,9 @@ class BotCommand : KoinComponent {
             }
             discordCommandLine.play != -1 -> {
                 processor.playSong(discordCommandLine.play - 1, event)
+            }
+            discordCommandLine.warikomi != -1 -> {
+                processor.playSongWarikomi(discordCommandLine.warikomi - 1, event)
             }
             discordCommandLine.isQueue -> {
                 processor.printQueue(event)
