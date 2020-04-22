@@ -143,6 +143,13 @@ class BotCommandTest {
                             cmdP.playSong(0, mesg)
                         }
                     },
+                    // 再生コマンド(先頭に割り込み)
+                    Pair("/warikomi 1") { cmdS, cmd, cmdP, mesg ->
+                        cmd.onCommandReceive(cmdS, mesg)
+                        coVerify {
+                            cmdP.playSongWarikomi(0, mesg)
+                        }
+                    },
                     // キューコマンド
                     Pair("/queue") { cmdS, cmd, cmdP, mesg ->
                         cmd.onCommandReceive(cmdS, mesg)
