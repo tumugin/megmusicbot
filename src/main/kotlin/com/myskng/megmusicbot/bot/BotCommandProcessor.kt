@@ -22,6 +22,7 @@ open class BotCommandProcessor : KoinComponent {
     private val store by inject<BotStateStore>()
     private val botStrings by inject<DefaultLangStrings>()
     private val songSearch by inject<SongSearch>()
+    private val rawOpusStreamProvider by inject<RawOpusStreamProvider>()
     private var voiceConnection: VoiceConnection? = null
 
     open suspend fun outputHelpText(event: MessageCreateEvent) {
@@ -40,7 +41,6 @@ open class BotCommandProcessor : KoinComponent {
             it.voiceStates.filter { voiceState -> voiceState.userId == event.message.author.get().id }.hasElements()
         }.awaitFirstOrNull() as VoiceChannel?
         if (channel != null) {
-            val rawOpusStreamProvider = RawOpusStreamProvider()
             voiceConnection = channel.join {
                 it.setProvider(rawOpusStreamProvider)
             }.awaitSingle()
@@ -194,6 +194,21 @@ open class BotCommandProcessor : KoinComponent {
         event.message.channel
             .awaitSingle()
             .createMessage("検索結果にある全ての楽曲(${songCount}曲)をキューに追加しました。")
+            .awaitSingle()
+    }
+
+    open suspend fun setVolume(volume: Int, event: MessageCreateEvent) {
+        if (volume !in 0..100) {
+            event.message.channel
+                .awaitSingle()
+                .createMessage("不正な音量設定です(0から100の値で指定してください)")
+                .awaitSingle()
+            return
+        }
+        rawOpusStreamProvider.volume = volume / 100.0
+        event.message.channel
+            .awaitSingle()
+            .createMessage("音量を${volume}に設定しました")
             .awaitSingle()
     }
 }

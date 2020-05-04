@@ -47,6 +47,7 @@ class BotCommandTest {
                 Pair("/nowplaying", true),
                 Pair("/clear", true),
                 Pair("/playall", true),
+                Pair("/volume", true),
                 Pair("上田麗奈", false),
                 Pair("やっぱ白石晴香なんだよなぁ...", false)
             )
@@ -189,6 +190,25 @@ class BotCommandTest {
                         cmd.onCommandReceive(cmdS, mesg)
                         coVerify {
                             cmdP.playAllSongs(mesg)
+                        }
+                    },
+                    // 音量設定コマンド
+                    Pair("/volume 0") { cmdS, cmd, cmdP, mesg ->
+                        cmd.onCommandReceive(cmdS, mesg)
+                        coVerify {
+                            cmdP.setVolume(0, mesg)
+                        }
+                    },
+                    Pair("/volume 100") { cmdS, cmd, cmdP, mesg ->
+                        cmd.onCommandReceive(cmdS, mesg)
+                        coVerify {
+                            cmdP.setVolume(100, mesg)
+                        }
+                    },
+                    Pair("/volume 50") { cmdS, cmd, cmdP, mesg ->
+                        cmd.onCommandReceive(cmdS, mesg)
+                        coVerify {
+                            cmdP.setVolume(50, mesg)
                         }
                     }
                 )

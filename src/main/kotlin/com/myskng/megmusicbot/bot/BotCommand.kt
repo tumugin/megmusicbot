@@ -34,10 +34,10 @@ class BotCommand : KoinComponent {
         var isSearch = false
 
         @CommandLine.Option(names = ["/play"])
-        var play: Int = -1
+        var play: Int? = null
 
         @CommandLine.Option(names = ["/warikomi"])
-        var warikomi: Int = -1
+        var warikomi: Int? = null
 
         @CommandLine.Option(names = ["/queue"])
         var isQueue = false
@@ -53,6 +53,9 @@ class BotCommand : KoinComponent {
 
         @CommandLine.Option(names = ["/playall"])
         var isPlayAll = false
+
+        @CommandLine.Option(names = ["/volume"])
+        var volume: Int? = null
     }
 
     private fun splitCommandToArray(command: String): List<String> {
@@ -120,11 +123,11 @@ class BotCommand : KoinComponent {
                 }
                 processor.searchSong(queryList.toTypedArray(), event)
             }
-            discordCommandLine.play != -1 -> {
-                processor.playSong(discordCommandLine.play - 1, event)
+            discordCommandLine.play != null -> {
+                processor.playSong(discordCommandLine.play!! - 1, event)
             }
-            discordCommandLine.warikomi != -1 -> {
-                processor.playSongWarikomi(discordCommandLine.warikomi - 1, event)
+            discordCommandLine.warikomi != null -> {
+                processor.playSongWarikomi(discordCommandLine.warikomi!! - 1, event)
             }
             discordCommandLine.isQueue -> {
                 processor.printQueue(event)
@@ -140,6 +143,9 @@ class BotCommand : KoinComponent {
             }
             discordCommandLine.isPlayAll -> {
                 processor.playAllSongs(event)
+            }
+            discordCommandLine.volume != null -> {
+                processor.setVolume(discordCommandLine.volume!!, event)
             }
             else -> {
                 throw CommandSyntaxException("コマンドの記法が間違っています。")

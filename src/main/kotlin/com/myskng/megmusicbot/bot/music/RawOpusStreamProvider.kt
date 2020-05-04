@@ -14,7 +14,7 @@ import java.nio.ByteBuffer
 import java.nio.IntBuffer
 import java.nio.ShortBuffer
 
-class RawOpusStreamProvider(sampleRate: Int = 48000, audioChannels: Int = 2) :
+class RawOpusStreamProvider(sampleRate: Int = 48000, audioChannels: Int = 2, var volume: Double = 1.0) :
     AudioProvider(ByteBuffer.allocate(1568)),
     KoinComponent, CoroutineScope {
     private val job = Job(get())
@@ -89,8 +89,8 @@ class RawOpusStreamProvider(sampleRate: Int = 48000, audioChannels: Int = 2) :
     private fun createShortPcmArray(pcm: ByteArray): ShortBuffer? {
         val nonEncodedBuffer = ShortBuffer.allocate(pcm.size / 2)
         for (i in pcm.indices step 2) {
-            val firstByte = 0x000000FF and pcm[i].toInt()
-            val secondByte = 0x000000FF and pcm[i + 1].toInt()
+            val firstByte = 0x000000FF and (pcm[i].toDouble() * volume).toInt()
+            val secondByte = 0x000000FF and (pcm[i + 1].toDouble() * volume).toInt()
             val combined = ((firstByte shl 8) or secondByte).toShort()
             nonEncodedBuffer.put(combined)
         }
