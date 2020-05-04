@@ -3,6 +3,7 @@ package com.myskng.megmusicbot.di
 import com.myskng.megmusicbot.bot.BotCommand
 import com.myskng.megmusicbot.bot.BotCommandProcessor
 import com.myskng.megmusicbot.bot.BotConnectionManager
+import com.myskng.megmusicbot.bot.music.RawOpusStreamProvider
 import com.myskng.megmusicbot.config.BotConfig
 import com.myskng.megmusicbot.database.SongSearch
 import com.myskng.megmusicbot.encoder.FFMpegEncoder
@@ -39,6 +40,9 @@ fun initializeKoinProduction(config: BotConfig) {
         }
         single {
             BotConnectionManager()
+        }
+        single {
+            RawOpusStreamProvider()
         }
         single {
             config

@@ -11,5 +11,6 @@ class DefaultLangStrings {
             "**検索結果からのキューへの追加** `/play 番号`\n" +
             "**検索結果からキューの先頭へ割り込み追加** `/warikomi 番号`\n" +
             "**キューの消去** `/clear`\n" +
-            "**現在再生中の曲情報** `/now` `/nowplaying`"
+            "**現在再生中の曲情報** `/now` `/nowplaying`\n" +
+            "**音量を設定する** `/volume 0から100の値`"
 }
