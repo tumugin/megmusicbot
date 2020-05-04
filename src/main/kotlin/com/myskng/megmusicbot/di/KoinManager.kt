@@ -42,12 +42,12 @@ fun initializeKoinProduction(config: BotConfig) {
             BotConnectionManager()
         }
         single {
-            RawOpusStreamProvider()
-        }
-        single {
             config
         }
         // Must be separated by guild so must not be singleton
+        factory {
+            RawOpusStreamProvider()
+        }
         factory {
             BotStateStore()
         }
